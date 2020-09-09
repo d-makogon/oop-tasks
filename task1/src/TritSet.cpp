@@ -5,6 +5,39 @@
 
 using namespace std;
 
+Trit operator&&(Trit left, Trit right)
+{
+    if (left == False || right == False)
+    {
+        return False;
+    }
+    if (left == True && right == True)
+    {
+        return True;
+    }
+    return Unknown;
+}
+
+Trit operator||(Trit left, Trit right)
+{
+    if (left == True || right == True)
+    {
+        return True;
+    }
+    if (left == False && right == False)
+    {
+        return False;
+    }
+    return Unknown;
+}
+
+Trit operator!(Trit t)
+{
+    if (t == False) return True;
+    if (t == True) return False;
+    return Unknown;
+}
+
 Trit uintToTrit(unsigned int x)
 {
     switch (x)
@@ -24,14 +57,13 @@ Trit uintToTrit(unsigned int x)
 // tritsCount trits
 size_t uintsForTrits(size_t tritsCount)
 {
-    size_t uintSize = sizeof(unsigned int);
-
     size_t bytesForTrits = (tritsCount * 2) / 8;
     if ((tritsCount * 2) % 8 != 0)
     {
         bytesForTrits++;
     }
 
+    size_t uintSize = sizeof(unsigned int);
     size_t uintsForTrits = bytesForTrits / uintSize;
     if (bytesForTrits % uintSize != 0)
     {
@@ -43,30 +75,49 @@ size_t uintsForTrits(size_t tritsCount)
 TritSet::TritSet(size_t tritsCount)
 {
     size_t uintsToAlloc = uintsForTrits(tritsCount);
-    auto* tmp = (unsigned int*)malloc(uintsToAlloc * sizeof(unsigned int));
+    auto tmp = (unsigned int*)malloc(uintsToAlloc * sizeof(unsigned int));
     if (tmp == nullptr)
     {
         throw bad_alloc();
     }
-
     _array = tmp;
+
+    // fill array with unknown trits
+    unsigned int defaultUint = 0;
+    size_t tritsInUint = sizeof(unsigned int) * 8 / 2;
+    for (int i = 0; i < tritsInUint; i++)
+    {
+        defaultUint = (defaultUint << (unsigned int)2) | (unsigned int)Trit::Unknown;
+    }
+
+    for (int i = 0; i < uintsToAlloc; i++)
+    {
+        _array[i] = defaultUint;
+    }
+
     _capacity = uintsToAlloc;
-    _maxTritsCount = (uintsToAlloc * sizeof(unsigned int) * 8) / 2;
+    _maxTritsCount = tritsCount;
+    _lastSetTrit = tritsCount;
 }
 
-void TritSet::enlarge(size_t newTritsCount)
+void TritSet::resize(size_t newTritsCount)
 {
     size_t newUintsCount = uintsForTrits(newTritsCount);
 
-    auto* tmp = (unsigned int*)realloc(_array, newUintsCount * sizeof(unsigned int));
+    if (capacity() == newUintsCount)
+    {
+        _maxTritsCount = newTritsCount;
+        return;
+    }
+
+    auto tmp = (unsigned int*)realloc(_array, newUintsCount * sizeof(unsigned int));
     if (tmp == nullptr)
     {
         throw bad_alloc();
     }
-    size_t cap = capacity();
     _array = tmp;
     _capacity = newUintsCount;
-    _maxTritsCount = (newUintsCount * sizeof(unsigned int) * 8) / 2;
+    _maxTritsCount = newTritsCount;
 }
 
 size_t TritSet::capacity() const
@@ -91,7 +142,7 @@ TritSet::TritProxy::operator Trit() const
     return static_cast<const TritSet&>(_tritSet)[_index];
 }
 
-// returns index of number in uint array which contains
+// Returns the index of number in uint array which contains
 // trit on tritIndex
 size_t getArrayIndex(size_t tritIndex)
 {
@@ -101,7 +152,7 @@ size_t getArrayIndex(size_t tritIndex)
 // getter
 Trit TritSet::operator[](size_t index) const
 {
-    if (index < 0/* || index > ...*/)
+    if (index < 0 || index > _maxTritsCount - 1)
     {
         return Trit::Unknown;
     }
@@ -132,10 +183,21 @@ void TritSet::setAt(size_t index, Trit trit)
     unsigned int tritBits = trit;
     num |= (tritBits << shift);
 
+    _lastSetTrit = index;
     _array[arrIndex] = num;
 }
 
-// setter
+TritSet::~TritSet()
+{
+    if (_array) free(_array);
+}
+
+void TritSet::shrink()
+{
+    resize(_lastSetTrit + 1);
+}
+
+// setter logic
 TritSet::TritProxy& TritSet::TritProxy::operator=(Trit val)
 {
     if (_index > _tritSet.maxTritsCount() - 1)
@@ -146,9 +208,15 @@ TritSet::TritProxy& TritSet::TritProxy::operator=(Trit val)
         }
         else
         {
-            _tritSet.enlarge(_index + 1);
+            // todo: try catch?
+            _tritSet.resize(_index + 1);
         }
     }
     _tritSet.setAt(_index, val);
     return *this;
+}
+
+bool TritSet::TritProxy::operator==(Trit trit)
+{
+    return (Trit)(*this) == trit;
 }
