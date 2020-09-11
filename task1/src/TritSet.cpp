@@ -1,11 +1,22 @@
 #include "TritSet.h"
 
+#include <cstring>
 #include <exception>
 #include <malloc.h>
 
 using namespace std;
 
-Trit operator&&(Trit left, Trit right)
+size_t min(size_t a, size_t b)
+{
+    return (a < b) ? a : b;
+}
+
+size_t max(size_t a, size_t b)
+{
+    return (a > b) ? a : b;
+}
+
+Trit operator&(Trit left, Trit right)
 {
     if (left == False || right == False)
     {
@@ -18,7 +29,7 @@ Trit operator&&(Trit left, Trit right)
     return Unknown;
 }
 
-Trit operator||(Trit left, Trit right)
+Trit operator|(Trit left, Trit right)
 {
     if (left == True || right == True)
     {
@@ -31,7 +42,7 @@ Trit operator||(Trit left, Trit right)
     return Unknown;
 }
 
-Trit operator!(Trit t)
+Trit operator~(Trit t)
 {
     if (t == False) return True;
     if (t == True) return False;
@@ -70,6 +81,14 @@ size_t uintsForTrits(size_t tritsCount)
         uintsForTrits++;
     }
     return uintsForTrits;
+}
+
+TritSet::TritSet()
+{
+    _array = nullptr;
+    _capacity = 0;
+    _maxTritsCount = 0;
+    _lastSetTrit = 0;
 }
 
 TritSet::TritSet(size_t tritsCount)
@@ -197,6 +216,28 @@ void TritSet::shrink()
     resize(_lastSetTrit + 1);
 }
 
+TritSet TritSet::operator&(TritSet& b)
+{
+    size_t setATritsCount = this->maxTritsCount();
+    size_t setBTritsCount = b.maxTritsCount();
+    size_t minTritsCount = min(setATritsCount, setBTritsCount);
+    size_t maxTritsCount = max(setATritsCount, setBTritsCount);
+
+    auto* resultSet = new TritSet(maxTritsCount);
+
+    for (size_t i = 0; i < minTritsCount; i++)
+    {
+        (*resultSet)[i] = (Trit)(*this)[i] & (Trit)b[i];
+    }
+
+    return *resultSet;
+}
+
+TritSet::TritSet(const TritSet& set) : TritSet(set.maxTritsCount())
+{
+    
+}
+
 // setter logic
 TritSet::TritProxy& TritSet::TritProxy::operator=(Trit val)
 {
@@ -208,7 +249,6 @@ TritSet::TritProxy& TritSet::TritProxy::operator=(Trit val)
         }
         else
         {
-            // todo: try catch?
             _tritSet.resize(_index + 1);
         }
     }

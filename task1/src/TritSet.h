@@ -7,19 +7,19 @@ enum Trit
     False = 0, Unknown = 1, True = 2
 };
 
-Trit operator&&(Trit left, Trit right);
-Trit operator||(Trit left, Trit right);
-Trit operator!(Trit t);
+Trit operator&(Trit left, Trit right);
+Trit operator|(Trit left, Trit right);
+Trit operator~(Trit t);
 
 Trit uintToTrit(unsigned int x);
 
 class TritSet
 {
 private:
-    unsigned int* _array;
-    size_t _capacity;
-    size_t _maxTritsCount;
-    size_t _lastSetTrit;
+    unsigned int* _array{};
+    size_t _capacity{};
+    size_t _maxTritsCount{};
+    size_t _lastSetTrit{};
 
     void resize(size_t newTritsCount);
 
@@ -44,7 +44,9 @@ public:
         bool operator==(Trit trit);
     };
 
+    TritSet();
     explicit TritSet(size_t tritsCount);
+    TritSet(const TritSet& set);
 
     ~TritSet();
 
@@ -58,6 +60,8 @@ public:
 
     // getter
     Trit operator[](size_t index) const;
+
+    TritSet operator&(TritSet& b);
 
     void shrink();
 };

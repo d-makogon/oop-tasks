@@ -31,5 +31,14 @@ int main(int argc, char* argv[])
     set.shrink();
     assert(allocLength > set.capacity());
 
+    TritSet setA(1000);
+    // setA[0] = True;
+    TritSet setB(2000);
+    // setB[0] = Unknown;
+
+    TritSet setC = setA & setB;
+
+    cout << setB.capacity() << " " << setC.capacity() << endl;
+
     return 0;
 }
