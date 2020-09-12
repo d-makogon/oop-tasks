@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+using namespace std;
+
 enum Trit
 {
     False = 0, Unknown = 1, True = 2
