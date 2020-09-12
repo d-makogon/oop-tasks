@@ -37,18 +37,19 @@ map<string, int> countWords(istream& input, int& wordsCount)
     while (getline(input, str))
     {
         string word;
+        size_t wordLength = 0;
         size_t length = str.length();
         for (size_t i = 0; i < length; i++)
         {
-            if (isalnum(str[i]) && i != length - 1)
+            bool alnum = isalnum(str[i]);
+            if (alnum)
             {
                 word.append(1, str[i]);
+                wordLength++;
             }
-            else
+            if (wordLength > 0 && (!alnum || i == length - 1))
             {
                 wordsCount++;
-                if (i == length - 1)
-                    word.append(1, str[i]);
 
                 auto search = words.find(word);
 
@@ -58,6 +59,7 @@ map<string, int> countWords(istream& input, int& wordsCount)
                     words.insert({word, 1});
 
                 word.clear();
+                wordLength = 0;
             }
         }
     }
@@ -75,6 +77,8 @@ void printFrequencies(ostream& stream, vector<pair<string, int>>& words, int tot
 
 int main(int argc, char* argv[])
 {
+    setlocale(LC_ALL, "ru_RU.cp1251");
+
     if (argc != 3)
     {
         cout << "Wrong amount of arguments" << endl;
