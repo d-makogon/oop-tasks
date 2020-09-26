@@ -13,14 +13,13 @@ private:
     typedef unsigned int cell_t;
 
     cell_t* _array;
-    // size of _array
+    // Size of _array
     size_t _capacity;
     size_t _maxTritsCount;
     size_t _initialTritsCount;
-    // index of the last trit with not unknown value
+    // Index of the last trit with not unknown value
     size_t _lastSetTrit;
     bool _isLastUpdated;
-
 
     void resize(size_t newTritsCount);
 
@@ -29,11 +28,14 @@ private:
 
     void fillFromTo(Trit t, size_t from, size_t to);
 
-    // fills entire array with trit t
+    // Fills entire array with trit t
     void fill(Trit t);
 
     // Returns cell filled with trit t
     static cell_t getTritCell(Trit t);
+
+    static cell_t insertTritInCell(cell_t cell, Trit t, size_t tritIndexInCell);
+    static Trit getTritInCell(cell_t cell, size_t tritIndexInCell);
 
 public:
     class TritProxy
@@ -47,7 +49,7 @@ public:
         friend class TritSet;
 
     public:
-        explicit operator Trit() const;
+        operator Trit() const;
 
         TritProxy& operator=(const Trit& val);
 
