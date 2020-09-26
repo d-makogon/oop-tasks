@@ -43,6 +43,8 @@ size_t getArrayIndex(size_t tritIndex, size_t cellSize)
     return (tritIndex * 2) / (8 * cellSize);
 }
 
+// Returns the index in TritSet of first trit located in
+// arrIndex cell + shift (0 <= shift < cellSize / 2)
 size_t getTritIndex(size_t arrIndex, size_t shift, size_t cellSize)
 {
     return (arrIndex * cellSize * 4) + shift;
@@ -89,7 +91,7 @@ TritSet::TritSet(size_t tritsCount)
     fill(Trit::Unknown);
 }
 
-// copy ctor
+// Copy ctor
 TritSet::TritSet(const TritSet& other) : TritSet(other.maxTritsCount())
 {
     memcpy(_array, other._array, _capacity * sizeof(cell_t));
@@ -97,6 +99,10 @@ TritSet::TritSet(const TritSet& other) : TritSet(other.maxTritsCount())
 
 void TritSet::resize(size_t newTritsCount)
 {
+    if (newTritsCount == _maxTritsCount)
+    {
+        return;
+    }
     size_t newCellsCount = cellsForTrits(newTritsCount, sizeof(cell_t));
 
     if (capacity() == newCellsCount)
@@ -179,24 +185,47 @@ void TritSet::updateLast()
     }
 }
 
+TritSet::cell_t TritSet::insertTritInCell(cell_t cell, Trit t, size_t tritIndexInCell)
+{
+    size_t cellBits = sizeof(cell_t) * 8;
+
+    if (tritIndexInCell * 2 >= cellBits) return cell;
+
+    size_t bitShift = cellBits - (tritIndexInCell * 2) - 2;
+    cell_t mask = ~((cell_t)(0b11) << bitShift);
+    cell &= mask;
+
+    auto tritNum = static_cast<cell_t>(t);
+    return cell | (tritNum << bitShift);
+}
+
+Trit TritSet::getTritInCell(cell_t cell, size_t tritIndexInCell)
+{
+    size_t cellBits = sizeof(cell_t) * 8;
+    size_t shift = cellBits - (tritIndexInCell * 2) - 2;
+
+    return static_cast<Trit>((unsigned int)0b11 & (cell >> shift));
+}
+
 void TritSet::setAt(size_t index, Trit trit)
 {
-    // if (index > _maxTritsCount - 1) return;
+    if ((_maxTritsCount == 0) || (index > _maxTritsCount - 1))
+    {
+        if (trit == Trit::Unknown)
+        {
+            return;
+        }
+        else
+        {
+            resize(index + 1);
+        }
+    }
 
     size_t arrIndex = getArrayIndex(index, sizeof(cell_t));
 
-    cell_t cell = _array[arrIndex];
-
     size_t cellBits = sizeof(cell_t) * 8;
 
-    size_t shift = cellBits - ((index * 2) % cellBits) - 2;
-    cell_t mask = ~((cell_t)(0b11) << shift);
-    cell &= mask;
-
-    auto tritNum = static_cast<cell_t>(trit);
-    cell |= (tritNum << shift);
-
-    _array[arrIndex] = cell;
+    _array[arrIndex] = insertTritInCell(_array[arrIndex], trit, index % (cellBits / 2));
 
     // if setting last set trit to Unknown
     if (trit == Trit::Unknown && _isLastUpdated && index == _lastSetTrit)
@@ -218,11 +247,10 @@ Trit TritSet::getAt(size_t index) const
     {
         return Trit::Unknown;
     }
-    cell_t cell = _array[getArrayIndex(index, sizeof(cell_t))];
     size_t cellBits = sizeof(cell_t) * 8;
+    cell_t cell = _array[getArrayIndex(index, sizeof(cell_t))];
 
-    size_t shift = cellBits - ((index * 2) % cellBits) - 2;
-    return static_cast<Trit>((unsigned int)0b11 & (cell >> shift));
+    return getTritInCell(cell, index % (cellBits / 2))
 }
 
 void TritSet::fillFromTo(Trit t, size_t from, size_t to)
@@ -352,6 +380,20 @@ TritSet TritSet::merge(const TritSet& other, Trit (* tritMergeFunc)(Trit, Trit))
         resultSet.setAt(i, tritMergeFunc(getAt(i), other.getAt(i)));
     }
 
+    if (setATritsCount == minTritsCount)
+    {
+        for (size_t i = minTritsCount; i < maxTritsCount; i++)
+        {
+            resultSet.setAt(i, tritMergeFunc(Trit::Unknown, other.getAt(i)));
+        }
+    }
+    else
+    {
+        for (size_t i = minTritsCount; i < maxTritsCount; i++)
+        {
+            resultSet.setAt(i, tritMergeFunc(getAt(i), Trit::Unknown));
+        }
+    }
     return resultSet;
 }
 
@@ -365,6 +407,18 @@ TritSet TritSet::operator|(const TritSet& other) const
     return merge(other, [](Trit a, Trit b) { return a | b; });
 }
 
+TritSet& TritSet::operator&=(const TritSet& other)
+{
+    (*this) = merge(other, [](Trit a, Trit b) { return a & b; });
+    return (*this);
+}
+
+TritSet& TritSet::operator|=(const TritSet& other)
+{
+    (*this) = merge(other, [](Trit a, Trit b) { return a | b; });
+    return *this;
+}
+
 TritSet TritSet::operator~() const
 {
     size_t tritsCount = maxTritsCount();
@@ -376,48 +430,6 @@ TritSet TritSet::operator~() const
     }
 
     return resultSet;
-}
-
-TritSet& TritSet::operator&=(const TritSet& other)
-{
-    size_t setATritsCount = maxTritsCount();
-    size_t setBTritsCount = other.maxTritsCount();
-    size_t minTritsCount = min(setATritsCount, setBTritsCount);
-    size_t maxTritsCount = max(setATritsCount, setBTritsCount);
-
-    resize(maxTritsCount);
-
-    for (size_t i = 0; i < minTritsCount; i++)
-    {
-        setAt(i, getAt(i) & other.getAt(i));
-    }
-    for (size_t i = minTritsCount; i < maxTritsCount; i++)
-    {
-        setAt(i, Trit::Unknown);
-    }
-
-    return *this;
-}
-
-TritSet& TritSet::operator|=(const TritSet& other)
-{
-    size_t setATritsCount = maxTritsCount();
-    size_t setBTritsCount = other.maxTritsCount();
-    size_t minTritsCount = min(setATritsCount, setBTritsCount);
-    size_t maxTritsCount = max(setATritsCount, setBTritsCount);
-
-    resize(maxTritsCount);
-
-    for (size_t i = 0; i < minTritsCount; i++)
-    {
-        setAt(i, getAt(i) | other.getAt(i));
-    }
-    for (size_t i = minTritsCount; i < maxTritsCount; i++)
-    {
-        setAt(i, Trit::Unknown);
-    }
-
-    return *this;
 }
 
 TritSet::~TritSet()
@@ -447,9 +459,11 @@ TritSet& TritSet::operator=(const TritSet& other)
 // ------ TritProxy ------
 
 
-TritSet::TritProxy::TritProxy(TritSet& tritSet, size_t index) : _tritSet(tritSet), _index(index) {}
+TritSet::TritProxy::TritProxy(TritSet& tritSet, size_t
+index) : _tritSet(tritSet), _index(index) {}
 
-TritSet::TritProxy::operator Trit() const
+TritSet::TritProxy::operator Trit()
+const
 {
     return static_cast<const TritSet&>(_tritSet)[_index];
 }
@@ -461,18 +475,7 @@ bool TritSet::TritProxy::operator==(Trit trit)
 
 TritSet::TritProxy& TritSet::TritProxy::operator=(const Trit& val)
 {
-    size_t maxTritsCount = _tritSet.maxTritsCount();
-    if ((maxTritsCount == 0) || (_index > maxTritsCount - 1))
-    {
-        if (val == Trit::Unknown)
-        {
-            return *this;
-        }
-        else
-        {
-            _tritSet.resize(_index + 1);
-        }
-    }
+
     _tritSet.setAt(_index, val);
     return *this;
 }
