@@ -138,7 +138,6 @@ TEST(TritSetTests, LengthTests)
 
 TEST(TritSetTests, MaxTritsCountTests)
 {
-    cout << "!";
     TritSet set(10);
     ASSERT_TRUE(set.maxTritsCount() == 10);
 
