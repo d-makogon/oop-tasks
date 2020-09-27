@@ -250,7 +250,7 @@ Trit TritSet::getAt(size_t index) const
     size_t cellBits = sizeof(cell_t) * 8;
     cell_t cell = _array[getArrayIndex(index, sizeof(cell_t))];
 
-    return getTritInCell(cell, index % (cellBits / 2))
+    return getTritInCell(cell, index % (cellBits / 2));
 }
 
 void TritSet::fillFromTo(Trit t, size_t from, size_t to)
@@ -348,6 +348,8 @@ void TritSet::shrink()
 
 void TritSet::trim(size_t lastIndex)
 {
+    if (_maxTritsCount == 0 || (lastIndex >= _maxTritsCount - 1)) return;
+
     fillFromTo(Trit::Unknown, lastIndex + 1, _maxTritsCount - 1);
     _maxTritsCount = lastIndex + 1;
     if (_isLastUpdated && _lastSetTrit >= lastIndex + 1)
@@ -443,6 +445,8 @@ TritSet& TritSet::operator=(const TritSet& other)
     {
         return *this;
     }
+
+    resize(other.maxTritsCount());
 
     memcpy(_array, other._array, _capacity * sizeof(cell_t));
 
