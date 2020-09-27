@@ -192,7 +192,7 @@ TritSet::cell_t TritSet::insertTritInCell(cell_t cell, Trit t, size_t tritIndexI
     if (tritIndexInCell * 2 >= cellBits) return cell;
 
     size_t bitShift = cellBits - (tritIndexInCell * 2) - 2;
-    cell_t mask = ~((cell_t)(0b11) << bitShift);
+    cell_t mask = ~((unsigned int)(0b11) << bitShift);
     cell &= mask;
 
     auto tritNum = static_cast<cell_t>(t);
