@@ -3,6 +3,10 @@
 
 .idea
 
+build
+
+.vscode
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
