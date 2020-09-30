@@ -7,17 +7,12 @@
 
 using namespace std;
 
-bool cmpWordsDesc(pair<string, int>& a, pair<string, int>& b)
-{
-    return a.second > b.second;
-}
-
 template<class KeyT, class ValueT>
 vector<pair<KeyT, ValueT>> sortMap(map<KeyT, ValueT>& M, bool (* cmp)(pair<KeyT, ValueT>&, pair<KeyT, ValueT>&))
 {
     vector<pair<KeyT, ValueT>> v;
-
     v.reserve(M.size());
+
     for (auto& it : M)
     {
         v.push_back(it);
@@ -50,14 +45,7 @@ map<string, int> countWords(istream& input, int& wordsCount)
             if (wordLength > 0 && (!alnum || i == length - 1))
             {
                 wordsCount++;
-
-                auto search = words.find(word);
-
-                if (search != words.end())
-                    words[word] += 1;
-                else
-                    words.insert({word, 1});
-
+                words[word] += 1;
                 word.clear();
                 wordLength = 0;
             }
@@ -96,20 +84,16 @@ int main(int argc, char* argv[])
     if (!outputFile.is_open())
     {
         cout << "Error opening file " << argv[2] << endl;
-        inputFile.close();
         return 1;
     }
 
     int totalWords = 0;
     map<string, int> words = countWords(inputFile, totalWords);
 
-    inputFile.close();
-
-    vector<pair<string, int>> sorted = sortMap(words, cmpWordsDesc);
+    auto sorted = sortMap<string, int>(words,
+                                       [](pair<string, int>& a, pair<string, int>& b) { return a.second > b.second; });
 
     printFrequencies(outputFile, sorted, totalWords);
-
-    outputFile.close();
 
     return 0;
 }
