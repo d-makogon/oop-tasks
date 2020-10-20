@@ -40,6 +40,11 @@ int main(int argc, char* argv[])
         }
 
         we.Execute();
+
+        for (auto& it : *workers)
+        {
+            delete it.second;
+        }
     }
     catch (exception& e)
     {
