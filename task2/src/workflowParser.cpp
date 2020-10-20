@@ -166,7 +166,7 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
             }
             else
             {
-                throw WorkflowParsingException({ "Error parsing line \"" << s << "\"\n" });
+                throw WorkflowParsingException({ "Error parsing line \"", s, "\"\n" });
             }
         }
     }

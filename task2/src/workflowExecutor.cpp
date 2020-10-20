@@ -27,6 +27,12 @@ void WorkflowExecutor::Execute()
     {
         prevWorker = currWorker;
         currWorker = (*_workers)[_execOrder[i]];
+
+        if (currWorker == nullptr)
+        {
+            throw WorkflowExecutionException({"No worker found for id", to_string(_execOrder[i]), "\n"});
+        }
+
         if ((i == 0) && _useCustomInputFile)
         {
             wr = rfWorker->Execute(wr);
