@@ -22,21 +22,18 @@ int main(int argc, char* argv[])
         WorkflowParser wfParser(argv[1]);
         ArgsParser argsParser(argc, argv);
 
-        const string& inputFile = argsParser.GetCmdOption("-i");
-        const string& outputFile = argsParser.GetCmdOption("-o");
-
         auto workers = wfParser.ParseWorkers();
         auto execOrder = wfParser.ParseExecutionOrder();
 
         WorkflowExecutor we(workers, execOrder);
 
-        if (!inputFile.empty())
+        if (argsParser.CmdOptionExists("-i"))
         {
-            we.SetCustomInputFile(inputFile);
+            we.SetCustomInputFile(argsParser.GetCmdOption("-i"));
         }
-        if (!outputFile.empty())
+        if (argsParser.CmdOptionExists("-o"))
         {
-            we.SetCustomOutputFile(outputFile);
+            we.SetCustomOutputFile(argsParser.GetCmdOption("-o"));
         }
 
         we.Execute();
