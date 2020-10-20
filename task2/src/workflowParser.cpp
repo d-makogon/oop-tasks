@@ -43,9 +43,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new ReadFileWorker(id, args);
     }
@@ -53,9 +51,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new WriteFileWorker(id, args);
     }
@@ -63,9 +59,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new GrepWorker(id, args);
     }
@@ -73,9 +67,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (!args.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new SortWorker(id);
     }
@@ -83,29 +75,26 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new DumpWorker(id, args);
     }
     if ("replace" == workerName)
     {
         string argsCopy = args;
+
         string word1 = argsCopy.substr(0, argsCopy.find(' '));
         argsCopy.erase(0, argsCopy.find(' ') + 1);
+
         string word2 = argsCopy.substr(0, argsCopy.find(' '));
+
         if (word1.empty() || word2.empty())
         {
-            stringstream ss;
-            ss << "Couldn't parse arguments for id" << id << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
         }
         return new ReplaceWorker(id, word1, word2);
     }
-    stringstream ss;
-    ss << "Invalid worker name: " << workerName << endl;
-    throw WorkflowParsingException(ss.str());
+    throw WorkflowParsingException({ "Invalid worker name: ", workerName, "\n" });
 }
 
 WorkflowParser::WorkflowParser(const string& filename)
@@ -121,9 +110,7 @@ WorkflowParser::WorkflowParser(const string& filename)
     }
     catch (ifstream::failure& e)
     {
-        stringstream ss;
-        ss << "Error opening file " << filename << endl;
-        throw WorkflowParsingException(ss.str());
+        throw WorkflowParsingException({ "Error opening file ", filename, "\n" });
     }
 }
 
@@ -147,25 +134,23 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
     }
 
     auto workers = make_unique<unordered_map<size_t, Worker*>>();
-    regex blocksRegex("^id([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
-    smatch blocksSm;
+    regex workersRegex("^id([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
+    smatch workersSm;
 
     try
     {
         while (!_inputStream.eof() && getline(_inputStream, s))
         {
-            if (regex_search(s, blocksSm, blocksRegex))
+            if (regex_search(s, workersSm, workersRegex))
             {
                 // $1 - id
                 // $2 - command name
                 // $3 - args
 
                 size_t id;
-                if (!str2size_t(id, blocksSm[1].str()))
+                if (!str2size_t(id, workersSm[1].str()))
                 {
-                    stringstream ss;
-                    ss << "Error parsing number (in line " << s << ")\n";
-                    throw WorkflowParsingException(ss.str());
+                    throw WorkflowParsingException({ "Error parsing number (in line ", s, ")\n" });
                 }
 
                 if (0 != workers->count(id))
@@ -173,7 +158,7 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
                     throw WorkflowParsingException("Duplicate ids in blocks description\n");
                 }
 
-                (*workers)[id] = GetWorkerByName(id, blocksSm[2], blocksSm[3]);
+                (*workers)[id] = GetWorkerByName(id, workersSm[2], workersSm[3]);
             }
             else if (s == "csed")
             {
@@ -181,17 +166,13 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
             }
             else
             {
-                stringstream ss;
-                ss << "Error parsing line '" << s << "'\n";
-                throw WorkflowParsingException(ss.str());
+                throw WorkflowParsingException({ "Error parsing line \"" << s << "\"\n" });
             }
         }
     }
     catch (ifstream::failure& e)
     {
-        stringstream ss;
-        ss << "Error opening/reading file " << _filename << endl;
-        throw WorkerExecutionException(ss.str());
+        throw WorkerExecutionException({ "Error opening/reading file ", _filename });
     }
     return workers;
 }
@@ -204,7 +185,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     {
         getline(_inputStream, s);
 
-        // in case last line (containing exec order) is terminated with \n:
+        // in case last line (containing exec order) is terminated with \n
         if (!_inputStream.eof())
         {
             getline(_inputStream, afterS);
@@ -218,9 +199,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     {
         if (!afterS.empty())
         {
-            stringstream ss;
-            ss << "Error reading execution order line from " << _filename << endl;
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Error reading execution order line from ", _filename, "\n" });
         }
     }
 
@@ -235,9 +214,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
         size_t id;
         if (!str2size_t(id, idSmatch[1].str()))
         {
-            stringstream ss;
-            ss << "Error parsing number (in line " << s << ")\n";
-            throw WorkflowParsingException(ss.str());
+            throw WorkflowParsingException({ "Error parsing number (in line ", s, ")\n" });
         }
 
         hasArrow = false;
@@ -255,4 +232,14 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     }
 
     return executionOrder;
+}
+
+WorkflowParsingException::WorkflowParsingException(initializer_list<string> list)
+{
+    stringstream ss;
+    for (const auto& item : list)
+    {
+        ss << item;
+    }
+    message = ss.str();
 }

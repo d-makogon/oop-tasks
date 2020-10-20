@@ -17,6 +17,7 @@ public:
     string message;
 
     explicit WorkflowParsingException(string message) : message(move(message)) {}
+    WorkflowParsingException(initializer_list<string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };

@@ -1,6 +1,7 @@
 #include "workflowExecutor.h"
 
 #include <utility>
+#include <sstream>
 
 void WorkflowExecutor::Execute()
 {
@@ -60,4 +61,14 @@ void WorkflowExecutor::SetCustomOutputFile(string filename)
 {
     _outputFileName = std::move(filename);
     _useCustomOutputFile = true;
+}
+
+WorkflowExecutionException::WorkflowExecutionException(initializer_list<string> list)
+{
+    stringstream ss;
+    for (const auto& item : list)
+    {
+        ss << item;
+    }
+    message = ss.str();
 }

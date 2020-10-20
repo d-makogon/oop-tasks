@@ -13,6 +13,7 @@ public:
     string message;
 
     explicit WorkerExecutionException(string message) : message(move(message)) {}
+    WorkerExecutionException(initializer_list<string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };

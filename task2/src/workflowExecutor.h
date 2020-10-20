@@ -15,6 +15,7 @@ public:
     string message;
 
     explicit WorkflowExecutionException(string message) : message(move(message)) {}
+    explicit WorkflowExecutionException(initializer_list<string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };
