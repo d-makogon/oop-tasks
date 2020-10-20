@@ -1,0 +1,10 @@
+desc
+1 = readfile in.txt
+2 = writefile out.txt
+3 = grep Word1
+4 = sort
+5 = dump /mnt/c/folder/f.txt
+6 = replace Word1 Word2
+7 = replace Word2 Word1
+csed
+1 -> 3 -> 6 -> 7 -> 4 -> 2

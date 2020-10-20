@@ -1,9 +1,0 @@
-desc
-id1 = readfile in.txt
-id2 = writefile out.txt
-id3 = grep word1
-id4 = sort
-id5 = dump /mnt/c/folder/f.txt
-id6 = replace word1 word2
-csed
-id1 -> id3 -> id5 -> id2
