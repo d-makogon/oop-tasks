@@ -43,7 +43,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new ReadFileWorker(id, args);
     }
@@ -51,7 +51,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new WriteFileWorker(id, args);
     }
@@ -59,7 +59,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new GrepWorker(id, args);
     }
@@ -67,7 +67,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (!args.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new SortWorker(id);
     }
@@ -75,7 +75,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     {
         if (args.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new DumpWorker(id, args);
     }
@@ -90,7 +90,7 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
 
         if (word1.empty() || word2.empty())
         {
-            throw WorkflowParsingException({ "Couldn't parse arguments for id", to_string(id), "\n" });
+            throw WorkflowParsingException({ "Couldn't parse arguments for id ", to_string(id), "\n" });
         }
         return new ReplaceWorker(id, word1, word2);
     }
@@ -134,7 +134,7 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
     }
 
     auto workers = make_unique<unordered_map<size_t, Worker*>>();
-    regex workersRegex("^id([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
+    regex workersRegex("^([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
     smatch workersSm;
 
     try
@@ -205,7 +205,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
 
     vector<size_t> executionOrder;
 
-    regex idRegex("^id([0-9]+)( -> |$)");
+    regex idRegex("^([0-9]+)( -> |$)");
     smatch idSmatch;
     bool hasArrow = false;
 
