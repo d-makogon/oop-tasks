@@ -9,15 +9,13 @@
 
 #include "worker.h"
 
-using namespace std;
-
-class WorkflowParsingException : public exception
+class WorkflowParsingException : public std::exception
 {
 public:
-    string message;
+    std::string message;
 
-    explicit WorkflowParsingException(string message) : message(move(message)) {}
-    WorkflowParsingException(initializer_list<string> list);
+    explicit WorkflowParsingException(std::string message) : message(std::move(message)) {}
+    WorkflowParsingException(std::initializer_list<std::string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };
@@ -25,13 +23,15 @@ public:
 class WorkflowParser
 {
 private:
-    ifstream _inputStream;
-    string _filename;
+    std::ifstream _inputStream;
+    std::string _filename;
 
 public:
-    explicit WorkflowParser(const string& filename);
+    using TWorkersMap = std::unordered_map<size_t, std::shared_ptr<Worker>>;
 
-    shared_ptr<unordered_map<size_t, Worker*>> ParseWorkers();
+    explicit WorkflowParser(const std::string& filename);
 
-    vector<size_t> ParseExecutionOrder();
+    std::shared_ptr<TWorkersMap> ParseWorkers();
+
+    std::vector<size_t> ParseExecutionOrder();
 };

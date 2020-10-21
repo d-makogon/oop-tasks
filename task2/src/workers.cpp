@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <sstream>
 
+using namespace std;
+
 Worker::WorkerResult ReadFileWorker::Execute(const Worker::WorkerResult& prev)
 {
     ifstream file;
@@ -25,7 +27,7 @@ Worker::WorkerResult ReadFileWorker::Execute(const Worker::WorkerResult& prev)
     {
         if (!file.eof())
         {
-            throw WorkerExecutionException({ "Error opening/reading/closing file ", filename, "\n" });
+            throw WorkerExecutionException({"Error opening/reading/closing file ", filename, "\n"});
         }
     }
     return WorkerResult(lines);
@@ -47,7 +49,7 @@ Worker::WorkerResult WriteFileWorker::Execute(const Worker::WorkerResult& prev)
     }
     catch (ofstream::failure& e)
     {
-        throw WorkerExecutionException({ "Error opening/writing to/closing file ", filename });
+        throw WorkerExecutionException({"Error opening/writing to/closing file ", filename});
     }
     return Worker::WorkerResult();
 }
@@ -117,7 +119,9 @@ Worker::WorkerResult DumpWorker::Execute(const Worker::WorkerResult& prev)
     }
     catch (ofstream::failure& e)
     {
-        throw WorkerExecutionException({ "Error opening/writing to/closing file ", filename });
+        throw WorkerExecutionException({"Error opening/writing to/closing file ", filename});
     }
     return prev;
 }
+
+#pragma clang diagnostic pop

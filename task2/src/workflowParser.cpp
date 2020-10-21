@@ -37,66 +37,6 @@ bool str2size_t(size_t& n, const string& str)
     return true;
 }
 
-Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
-{
-    if ("readfile" == workerName)
-    {
-        if (args.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new ReadFileWorker(id, args);
-    }
-    if ("writefile" == workerName)
-    {
-        if (args.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new WriteFileWorker(id, args);
-    }
-    if ("grep" == workerName)
-    {
-        if (args.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new GrepWorker(id, args);
-    }
-    if ("sort" == workerName)
-    {
-        if (!args.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new SortWorker(id);
-    }
-    if ("dump" == workerName)
-    {
-        if (args.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new DumpWorker(id, args);
-    }
-    if ("replace" == workerName)
-    {
-        string argsCopy = args;
-
-        string word1 = argsCopy.substr(0, argsCopy.find(' '));
-        argsCopy.erase(0, argsCopy.find(' ') + 1);
-
-        string word2 = argsCopy.substr(0, argsCopy.find(' '));
-
-        if (word1.empty() || word2.empty())
-        {
-            throw WorkflowParsingException({"Couldn't parse arguments for id ", to_string(id), "\n"});
-        }
-        return new ReplaceWorker(id, word1, word2);
-    }
-    throw WorkflowParsingException({"Invalid worker name: ", workerName, "\n"});
-}
-
 WorkflowParser::WorkflowParser(const string& filename)
 {
     _filename = filename;
@@ -114,7 +54,25 @@ WorkflowParser::WorkflowParser(const string& filename)
     }
 }
 
-shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
+vector<string> splitString(string s, char delimiter)
+{
+    vector<string> substrings;
+
+    size_t delimIndex;
+    while (string::npos != (delimIndex = s.find(delimiter)))
+    {
+        string subs = s.substr(0, delimIndex);
+        s.erase(0, delimIndex + 1);
+        substrings.emplace_back(subs);
+    }
+    if (!s.empty())
+    {
+        substrings.emplace_back(s);
+    }
+    return substrings;
+}
+
+shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
 {
     string s;
 
@@ -131,7 +89,7 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
         throw WorkflowParsingException("File doesn't start with 'desc'\n");
     }
 
-    auto workers = make_unique<unordered_map<size_t, Worker*>>();
+    auto workers = make_unique<WorkflowParser::TWorkersMap>();
     regex workersRegex("^([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
     smatch workersSm;
 
@@ -156,7 +114,9 @@ shared_ptr<unordered_map<size_t, Worker*>> WorkflowParser::ParseWorkers()
                     throw WorkflowParsingException("Duplicate ids in blocks description\n");
                 }
 
-                (*workers)[id] = GetWorkerByName(id, workersSm[2], workersSm[3]);
+                vector<string> args = splitString(workersSm[3], ' ');
+
+                (*workers)[id] = WorkersFactory::Create(workersSm[2], args);
             }
             else if (s == "csed")
             {

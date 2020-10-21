@@ -9,13 +9,13 @@
 #include "worker.h"
 #include "workers.h"
 
-class WorkflowExecutionException : public exception
+class WorkflowExecutionException : public std::exception
 {
 public:
-    string message;
+    std::string message;
 
-    explicit WorkflowExecutionException(string message) : message(move(message)) {}
-    explicit WorkflowExecutionException(initializer_list<string> list);
+    explicit WorkflowExecutionException(std::string message) : message(std::move(message)) {}
+    WorkflowExecutionException(std::initializer_list<std::string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };
@@ -24,30 +24,32 @@ public:
 class WorkflowExecutor
 {
 private:
-    shared_ptr<unordered_map<size_t, Worker*>> _workers;
-    vector<size_t> _execOrder;
+    using TWorkersMap = std::unordered_map<size_t, std::shared_ptr<Worker>>;
 
-    string _inputFileName;
-    string _outputFileName;
+    std::shared_ptr<TWorkersMap> _workers;
+    std::vector<size_t> _execOrder;
+
+    std::string _inputFileName;
+    std::string _outputFileName;
 
     bool _useCustomInputFile;
     bool _useCustomOutputFile;
 
 public:
-    WorkflowExecutor(shared_ptr<unordered_map<size_t, Worker*>> workers,
-                     const vector<size_t>& execOrder) :
+    WorkflowExecutor(std::shared_ptr<TWorkersMap> workers,
+                     std::vector<size_t> execOrder) :
             _workers(std::move(workers)),
-            _execOrder(execOrder),
+            _execOrder(std::move(execOrder)),
             _useCustomInputFile(false),
             _useCustomOutputFile(false) {}
 
-    shared_ptr<unordered_map<size_t, Worker*>> GetWorkers() { return _workers; }
+    std::shared_ptr<TWorkersMap> GetWorkers() { return _workers; }
 
-    vector<size_t> GetExecOrder() { return _execOrder; }
+    std::vector<size_t> GetExecOrder() { return _execOrder; }
 
-    void SetCustomInputFile(string filename);
+    void SetCustomInputFile(std::string filename);
 
-    void SetCustomOutputFile(string filename);
+    void SetCustomOutputFile(std::string filename);
 
     void Execute();
 };

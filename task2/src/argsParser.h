@@ -3,17 +3,15 @@
 #include <vector>
 #include <algorithm>
 
-using namespace std;
-
 class ArgsParser
 {
 public:
     ArgsParser(int& argc, char** argv);
 
-    [[nodiscard]] const string& GetCmdOption(const string& option) const;
+    [[nodiscard]] const std::string& GetCmdOption(const std::string& option) const;
 
-    [[nodiscard]] bool CmdOptionExists(const string& option) const;
+    [[nodiscard]] bool CmdOptionExists(const std::string& option) const;
 
 private:
-    vector<string> tokens;
+    std::vector<std::string> tokens;
 };

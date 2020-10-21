@@ -10,6 +10,23 @@
 
 using namespace std;
 
+map<string, WorkersFactory::TCreateMethod> WorkersFactory::s_methods;
+
+bool ReadFileWorker::f_registered = WorkersFactory::Register(ReadFileWorker::GetWorkerName(),
+                                                             ReadFileWorker::CreateMethod);
+
+bool WriteFileWorker::f_registered = WorkersFactory::Register(WriteFileWorker::GetWorkerName(),
+                                                              WriteFileWorker::CreateMethod);
+
+bool GrepWorker::f_registered = WorkersFactory::Register(GrepWorker::GetWorkerName(), GrepWorker::CreateMethod);
+
+bool SortWorker::f_registered = WorkersFactory::Register(SortWorker::GetWorkerName(), SortWorker::CreateMethod);
+
+bool ReplaceWorker::f_registered = WorkersFactory::Register(ReplaceWorker::GetWorkerName(),
+                                                            ReplaceWorker::CreateMethod);
+
+bool DumpWorker::f_registered = WorkersFactory::Register(DumpWorker::GetWorkerName(), DumpWorker::CreateMethod);
+
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -35,13 +52,8 @@ int main(int argc, char* argv[])
         {
             we.SetCustomOutputFile(argsParser.GetCmdOption("-o"));
         }
-
+        
         we.Execute();
-
-        for (auto& it : *workers)
-        {
-            delete it.second;
-        }
     }
     catch (exception& e)
     {
