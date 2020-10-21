@@ -1,7 +1,7 @@
 desc
 3 = grep Word1
 4 = sort
-5 = dump /mnt/c/folder/f.txt
+5 = dump H:/test/out9.txt
 6 = replace word1 word2
 csed
 3 -> 5 -> 6

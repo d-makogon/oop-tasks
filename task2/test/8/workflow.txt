@@ -6,3 +6,4 @@ desc
 5 = dump /mnt/c/folder/f.txt
 6 = replace word1 word2
 csed
+2
