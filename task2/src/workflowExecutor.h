@@ -15,7 +15,7 @@ public:
     string message;
 
     explicit WorkflowExecutionException(string message) : message(move(message)) {}
-    explicit WorkflowExecutionException(initializer_list<string> list);
+    WorkflowExecutionException(initializer_list<string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };
@@ -35,9 +35,9 @@ private:
 
 public:
     WorkflowExecutor(shared_ptr<unordered_map<size_t, Worker*>> workers,
-                     const vector<size_t>& execOrder) :
+                     vector<size_t> execOrder) :
             _workers(std::move(workers)),
-            _execOrder(execOrder),
+            _execOrder(std::move(execOrder)),
             _useCustomInputFile(false),
             _useCustomOutputFile(false) {}
 

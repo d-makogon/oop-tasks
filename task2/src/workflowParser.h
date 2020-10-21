@@ -29,7 +29,7 @@ private:
     string _filename;
 
 public:
-    explicit WorkflowParser(const string& filename);
+    explicit WorkflowParser(string filename);
 
     shared_ptr<unordered_map<size_t, Worker*>> ParseWorkers();
 

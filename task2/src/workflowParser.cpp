@@ -7,8 +7,6 @@
 #include <memory>
 #include <unordered_map>
 
-#include <iostream>
-
 #include "worker.h"
 #include "workers.h"
 
@@ -39,6 +37,7 @@ bool str2size_t(size_t& n, const string& str)
 
 Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
 {
+    // todo: factory class with map<string, factoryFunction>
     if ("readfile" == workerName)
     {
         if (args.empty())
@@ -97,20 +96,20 @@ Worker* GetWorkerByName(size_t id, const string& workerName, const string& args)
     throw WorkflowParsingException({"Invalid worker name: ", workerName, "\n"});
 }
 
-WorkflowParser::WorkflowParser(const string& filename)
+WorkflowParser::WorkflowParser(string filename)
 {
-    _filename = filename;
+    _filename = move(filename);
 
     _inputStream = ifstream();
     _inputStream.exceptions(ifstream::failbit | ifstream::badbit);
 
     try
     {
-        _inputStream.open(filename);
+        _inputStream.open(_filename);
     }
     catch (ifstream::failure& e)
     {
-        throw WorkflowParsingException({"Error opening file ", filename, "\n"});
+        throw WorkflowParsingException({"Error opening file ", _filename, "\n"});
     }
 }
 
@@ -182,7 +181,14 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     try
     {
         getline(_inputStream, s);
+    }
+    catch (ifstream::failure& e)
+    {
+        throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
+    }
 
+    try
+    {
         // in case last line (containing exec order) is terminated with \n
         if (!_inputStream.eof())
         {

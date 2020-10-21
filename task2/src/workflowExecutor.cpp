@@ -11,7 +11,7 @@ void WorkflowExecutor::Execute()
     Worker* rfWorker;
     Worker* wfWorker;
     Worker* prevWorker;
-    Worker* currWorker;
+    Worker* currWorker = nullptr;
 
     if (_useCustomInputFile)
     {
