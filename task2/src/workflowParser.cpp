@@ -138,28 +138,34 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
 vector<size_t> WorkflowParser::ParseExecutionOrder()
 {
     string s;
-    string afterS;
     try
     {
         getline(_inputStream, s);
 
+    }
+    catch (ifstream::failure& e)
+    {
+        throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
+    }
+
+    string afterS;
+    try
+    {
+        getline(_inputStream, afterS);
         // in case last line (containing exec order) is terminated with \n
-        if (!_inputStream.eof())
+        if (!afterS.empty())
         {
-            getline(_inputStream, afterS);
-            if (!afterS.empty())
-            {
-                throw ifstream::failure("");
-            }
+            throw ifstream::failure("");
         }
     }
     catch (ifstream::failure& e)
     {
         if (!afterS.empty())
         {
-            throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
+            throw WorkflowParsingException({"Error parsing line \"", afterS, "\"\n"});
         }
     }
+
 
     vector<size_t> executionOrder;
 
