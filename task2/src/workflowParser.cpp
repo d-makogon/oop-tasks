@@ -2,15 +2,16 @@
 
 #include <istream>
 #include <fstream>
-#include <sstream>
 #include <regex>
 #include <memory>
 #include <unordered_map>
 
 #include <iostream>
+#include <utility>
 
 #include "worker.h"
 #include "workers.h"
+#include "workersFactory.h"
 
 using namespace std;
 
@@ -37,20 +38,21 @@ bool str2size_t(size_t& n, const string& str)
     return true;
 }
 
-WorkflowParser::WorkflowParser(const string& filename)
+WorkflowParser::WorkflowParser(string filename, Factory<Worker> factory)
 {
-    _filename = filename;
+    _filename = std::move(filename);
+    _factory = std::move(factory);
 
     _inputStream = ifstream();
     _inputStream.exceptions(ifstream::failbit | ifstream::badbit);
 
     try
     {
-        _inputStream.open(filename);
+        _inputStream.open(_filename);
     }
     catch (ifstream::failure& e)
     {
-        throw WorkflowParsingException({"Error opening file ", filename, "\n"});
+        throw WorkflowParsingException({"Error opening file ", _filename, "\n"});
     }
 }
 
@@ -89,22 +91,22 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
         throw WorkflowParsingException("File doesn't start with 'desc'\n");
     }
 
-    auto workers = make_unique<WorkflowParser::TWorkersMap>();
-    regex workersRegex("^([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
-    smatch workersSm;
+    auto workers = make_shared<WorkflowParser::TWorkersMap>();
+    std::regex workersRegex("^([0-9]+) = (readfile|writefile|grep|sort|replace|dump)(?: (.+)$|$)");
+    std::smatch workersSmatch;
 
     try
     {
         while (!_inputStream.eof() && getline(_inputStream, s))
         {
-            if (regex_search(s, workersSm, workersRegex))
+            if (regex_search(s, workersSmatch, workersRegex))
             {
                 // $1 - id
                 // $2 - command name
                 // $3 - args
 
                 size_t id;
-                if (!str2size_t(id, workersSm[1].str()))
+                if (!str2size_t(id, workersSmatch[1].str()))
                 {
                     throw WorkflowParsingException({"Error parsing number (in line ", s, ")\n"});
                 }
@@ -114,9 +116,14 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
                     throw WorkflowParsingException("Duplicate ids in blocks description\n");
                 }
 
-                vector<string> args = splitString(workersSm[3], ' ');
+                vector<string> args = splitString(workersSmatch[3], ' ');
 
-                (*workers)[id] = WorkersFactory::Create(workersSm[2], args);
+                auto worker = _factory.Create(workersSmatch[2], args);
+                if (worker == nullptr)
+                {
+                    throw WorkflowParsingException({"Error parsing worker name \"", workersSmatch[2], "\"\n"});
+                }
+                (*workers)[id] = worker;
             }
             else if (s == "csed")
             {
@@ -138,34 +145,28 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
 vector<size_t> WorkflowParser::ParseExecutionOrder()
 {
     string s;
+    string afterS;
     try
     {
         getline(_inputStream, s);
 
-    }
-    catch (ifstream::failure& e)
-    {
-        throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
-    }
-
-    string afterS;
-    try
-    {
-        getline(_inputStream, afterS);
         // in case last line (containing exec order) is terminated with \n
-        if (!afterS.empty())
+        if (!_inputStream.eof())
         {
-            throw ifstream::failure("");
+            getline(_inputStream, afterS);
+            if (!afterS.empty())
+            {
+                throw ifstream::failure("");
+            }
         }
     }
     catch (ifstream::failure& e)
     {
         if (!afterS.empty())
         {
-            throw WorkflowParsingException({"Error parsing line \"", afterS, "\"\n"});
+            throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
         }
     }
-
 
     vector<size_t> executionOrder;
 

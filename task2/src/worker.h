@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 #include <exception>
-#include <memory>
-#include <map>
 
 class WorkerExecutionException : public std::exception
 {
@@ -54,19 +52,4 @@ protected:
 
     Worker(ReturnType inputType, ReturnType outputType) : inputType(inputType),
                                                           outputType(outputType) {}
-};
-
-class WorkersFactory
-{
-public:
-    using TCreateMethod = std::shared_ptr<Worker> (*)(const std::vector<std::string>& args);
-
-    WorkersFactory() = delete;
-
-    static bool Register(const std::string& name, TCreateMethod funcCreate);
-
-    static std::shared_ptr<Worker> Create(const std::string& name, const std::vector<std::string>& args);
-
-private:
-    static std::map<std::string, TCreateMethod> s_methods;
 };

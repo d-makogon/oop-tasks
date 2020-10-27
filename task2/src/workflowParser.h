@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "worker.h"
+#include "workersFactory.h"
 
 class WorkflowParsingException : public std::exception
 {
@@ -25,11 +26,12 @@ class WorkflowParser
 private:
     std::ifstream _inputStream;
     std::string _filename;
+    Factory<Worker> _factory;
 
 public:
     using TWorkersMap = std::unordered_map<size_t, std::shared_ptr<Worker>>;
 
-    explicit WorkflowParser(const std::string& filename);
+    WorkflowParser(std::string filename, Factory<Worker> factory);
 
     std::shared_ptr<TWorkersMap> ParseWorkers();
 
