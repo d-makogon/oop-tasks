@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <stdexcept>
 
 #include "worker.h"
 #include "workers.h"
@@ -49,6 +50,10 @@ class Factory<ReadFileWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 1)
+        {
+            throw std::invalid_argument("Invalid number of arguments for ReadFileWorker.");
+        }
         return std::make_shared<ReadFileWorker>(args[0]);
     }
 };
@@ -59,6 +64,10 @@ class Factory<WriteFileWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 1)
+        {
+            throw std::invalid_argument("Invalid number of arguments for WriteFileWorker.");
+        }
         return std::make_shared<WriteFileWorker>(args[0]);
     }
 };
@@ -69,6 +78,10 @@ class Factory<GrepWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 1)
+        {
+            throw std::invalid_argument("Invalid number of arguments for GrepWorker.");
+        }
         return std::make_shared<GrepWorker>(args[0]);
     }
 };
@@ -79,6 +92,10 @@ class Factory<SortWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 0)
+        {
+            throw std::invalid_argument("Invalid number of arguments for SortWorker.");
+        }
         return std::make_shared<SortWorker>();
     }
 };
@@ -89,6 +106,10 @@ class Factory<ReplaceWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 2)
+        {
+            throw std::invalid_argument("Invalid number of arguments for ReplaceWorker.");
+        }
         return std::make_shared<ReplaceWorker>(args[0], args[1]);
     }
 };
@@ -99,6 +120,10 @@ class Factory<DumpWorker>
 public:
     static std::shared_ptr<Worker> CreateFunc(const std::vector<std::string>& args)
     {
+        if (args.size() != 1)
+        {
+            throw std::invalid_argument("Invalid number of arguments for DumpWorker.");
+        }
         return std::make_shared<DumpWorker>(args[0]);
     }
 };
