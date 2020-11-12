@@ -1,4 +1,4 @@
-#include "workflowParser.h"
+#include <workflowParser.h>
 
 #include <istream>
 #include <fstream>
@@ -9,9 +9,9 @@
 #include <iostream>
 #include <utility>
 
-#include "worker.h"
-#include "workers.h"
-#include "workersFactory.h"
+#include <worker.h>
+#include <workers.h>
+#include <workersFactory.h>
 
 using namespace std;
 
@@ -148,7 +148,6 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     try
     {
         getline(_inputStream, s);
-
     }
     catch (ifstream::failure& e)
     {
