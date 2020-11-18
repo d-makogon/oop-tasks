@@ -3,8 +3,7 @@
 
 using namespace std;
 
-
-WorkerExecutionException::WorkerExecutionException(initializer_list<string> list)
+WorkflowException::WorkflowException(initializer_list<string> list)
 {
     stringstream ss;
     for (const auto& item : list)

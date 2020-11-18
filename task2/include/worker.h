@@ -5,14 +5,14 @@
 #include <string>
 #include <exception>
 
-class WorkerExecutionException : public std::exception
+class WorkflowException : public std::exception
 {
 public:
     std::string message;
 
-    explicit WorkerExecutionException(std::string message) : message(std::move(message)) {}
+    explicit WorkflowException(std::string message) : message(std::move(message)) {}
 
-    WorkerExecutionException(std::initializer_list<std::string> list);
+    WorkflowException(std::initializer_list<std::string> list);
 
     [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 };

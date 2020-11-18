@@ -52,7 +52,7 @@ WorkflowParser::WorkflowParser(string filename, Factory<Worker> factory)
     }
     catch (ifstream::failure& e)
     {
-        throw WorkflowParsingException({"Error opening file ", _filename, "\n"});
+        throw WorkflowException({"Error opening file ", _filename, "\n"});
     }
 }
 
@@ -84,11 +84,11 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
     }
     catch (ifstream::failure& e)
     {
-        throw WorkflowParsingException({"Error reading from file ", _filename});
+        throw WorkflowException({"Error reading from file ", _filename});
     }
     if (s != "desc")
     {
-        throw WorkflowParsingException("File doesn't start with 'desc'\n");
+        throw WorkflowException("File doesn't start with 'desc'\n");
     }
 
     auto workers = make_shared<WorkflowParser::TWorkersMap>();
@@ -108,12 +108,12 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
                 size_t id;
                 if (!str2size_t(id, workersSmatch[1].str()))
                 {
-                    throw WorkflowParsingException({"Error parsing number (in line ", s, ")\n"});
+                    throw WorkflowException({"Error parsing number (in line ", s, ")\n"});
                 }
 
                 if (0 != workers->count(id))
                 {
-                    throw WorkflowParsingException("Duplicate ids in blocks description\n");
+                    throw WorkflowException("Duplicate ids in blocks description\n");
                 }
 
                 vector<string> args = splitString(workersSmatch[3], ' ');
@@ -121,7 +121,7 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
                 auto worker = _factory.Create(workersSmatch[2], args);
                 if (worker == nullptr)
                 {
-                    throw WorkflowParsingException({"Error parsing worker name \"", workersSmatch[2], "\"\n"});
+                    throw WorkflowException({"Error parsing worker name \"", workersSmatch[2], "\"\n"});
                 }
                 (*workers)[id] = worker;
             }
@@ -131,13 +131,13 @@ shared_ptr<WorkflowParser::TWorkersMap> WorkflowParser::ParseWorkers()
             }
             else
             {
-                throw WorkflowParsingException({"Error parsing line \"", s, "\"\n"});
+                throw WorkflowException({"Error parsing line \"", s, "\"\n"});
             }
         }
     }
     catch (ifstream::failure& e)
     {
-        throw WorkerExecutionException({"Error opening/reading file ", _filename});
+        throw WorkflowException({"Error opening/reading file ", _filename});
     }
     return workers;
 }
@@ -151,7 +151,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     }
     catch (ifstream::failure& e)
     {
-        throw WorkflowParsingException({"Error reading execution order line from ", _filename, "\n"});
+        throw WorkflowException({"Error reading execution order line from ", _filename, "\n"});
     }
 
     string afterS;
@@ -168,7 +168,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     {
         if (!afterS.empty())
         {
-            throw WorkflowParsingException({"Error parsing line \"", afterS, "\"\n"});
+            throw WorkflowException({"Error parsing line \"", afterS, "\"\n"});
         }
     }
 
@@ -183,7 +183,7 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
         size_t id;
         if (!str2size_t(id, idSmatch[1].str()))
         {
-            throw WorkflowParsingException({"Error parsing number (in line ", s, ")\n"});
+            throw WorkflowException({"Error parsing number (in line ", s, ")\n"});
         }
 
         hasArrow = false;
@@ -197,18 +197,8 @@ vector<size_t> WorkflowParser::ParseExecutionOrder()
     }
     if (!s.empty() || hasArrow)
     {
-        throw WorkflowParsingException("Error reading execution order line\n");
+        throw WorkflowException("Error reading execution order line\n");
     }
 
     return executionOrder;
-}
-
-WorkflowParsingException::WorkflowParsingException(initializer_list<string> list)
-{
-    stringstream ss;
-    for (const auto& item : list)
-    {
-        ss << item;
-    }
-    message = ss.str();
 }

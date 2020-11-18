@@ -27,7 +27,7 @@ Worker::WorkerResult ReadFileWorker::Execute(const Worker::WorkerResult& prev)
     {
         if (!file.eof())
         {
-            throw WorkerExecutionException({"Error opening/reading/closing file ", filename, "\n"});
+            throw WorkflowException({"Error opening/reading/closing file ", filename, "\n"});
         }
     }
     return WorkerResult(lines);
@@ -49,7 +49,7 @@ Worker::WorkerResult WriteFileWorker::Execute(const Worker::WorkerResult& prev)
     }
     catch (ofstream::failure& e)
     {
-        throw WorkerExecutionException({"Error opening/writing to/closing file ", filename});
+        throw WorkflowException({"Error opening/writing to/closing file ", filename});
     }
     return Worker::WorkerResult();
 }
@@ -119,7 +119,7 @@ Worker::WorkerResult DumpWorker::Execute(const Worker::WorkerResult& prev)
     }
     catch (ofstream::failure& e)
     {
-        throw WorkerExecutionException({"Error opening/writing to/closing file ", filename});
+        throw WorkflowException({"Error opening/writing to/closing file ", filename});
     }
     return prev;
 }

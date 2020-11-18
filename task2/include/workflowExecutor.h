@@ -9,18 +9,6 @@
 #include "worker.h"
 #include "workers.h"
 
-class WorkflowExecutionException : public std::exception
-{
-public:
-    std::string message;
-
-    explicit WorkflowExecutionException(std::string message) : message(std::move(message)) {}
-    WorkflowExecutionException(std::initializer_list<std::string> list);
-
-    [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
-};
-
-
 class WorkflowExecutor
 {
 private:

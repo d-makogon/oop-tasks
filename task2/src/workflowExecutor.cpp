@@ -33,7 +33,7 @@ void WorkflowExecutor::Execute()
 
         if (currWorker == nullptr)
         {
-            throw WorkflowExecutionException({"No worker found for id", to_string(_execOrder[i]), "\n"});
+            throw WorkflowException({"No worker found for id", to_string(_execOrder[i]), "\n"});
         }
 
         if ((i == 0) && _useCustomInputFile)
@@ -44,7 +44,7 @@ void WorkflowExecutor::Execute()
 
         if ((i > 0 || _useCustomInputFile) && prevWorker->GetOutputType() != currWorker->GetInputType())
         {
-            throw WorkerExecutionException("Conflicting output and input types of blocks\n");
+            throw WorkflowException("Conflicting output and input types of blocks\n");
         }
 
         wr = currWorker->Execute(wr);
@@ -53,7 +53,7 @@ void WorkflowExecutor::Execute()
         {
             if (currWorker->GetOutputType() != wfWorker->GetInputType())
             {
-                throw WorkerExecutionException("Conflicting output and input types of blocks\n");
+                throw WorkflowException("Conflicting output and input types of blocks\n");
             }
             wr = wfWorker->Execute(wr);
         }
@@ -70,14 +70,4 @@ void WorkflowExecutor::SetCustomOutputFile(string filename)
 {
     _outputFileName = std::move(filename);
     _useCustomOutputFile = true;
-}
-
-WorkflowExecutionException::WorkflowExecutionException(initializer_list<string> list)
-{
-    stringstream ss;
-    for (const auto& item : list)
-    {
-        ss << item;
-    }
-    message = ss.str();
 }

@@ -10,17 +10,6 @@
 #include "worker.h"
 #include "workersFactory.h"
 
-class WorkflowParsingException : public std::exception
-{
-public:
-    std::string message;
-
-    explicit WorkflowParsingException(std::string message) : message(std::move(message)) {}
-    WorkflowParsingException(std::initializer_list<std::string> list);
-
-    [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
-};
-
 class WorkflowParser
 {
 private:
