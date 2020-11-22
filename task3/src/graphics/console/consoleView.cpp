@@ -21,7 +21,6 @@ bs::ConsoleView::CellChar bs::ConsoleView::FromHistory(const bs::ShotHistory& sh
 
 void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellChar(const bs::Coordinate&)>& getCellFunc)
 {
-    // todo: if board is > 10?
     // print row with X coordinates
     for (int x = 0; x < maxX; x++)
     {
@@ -93,64 +92,84 @@ void bs::ConsoleView::PrintAllyBoard(const bs::Board& board)
     });
 }
 
-void bs::ConsoleView::PlaceShip(PlayerController* pc)
-{
-    const auto& board = logic.GetBoard();
-
-
-    std::vector<ShipType> availableTypes;
-    for (auto&[type, count] : board.GetMaxShipsAmount())
-    {
-        if (count > 0) availableTypes.push_back(type);
-    }
-
-
-    static std::vector<ShipDirection> availableDirs;
-    if (availableDirs.empty())
-    {
-        availableDirs.reserve(ShipDirsNames.size());
-        for (auto&[dir, name] : ShipDirsNames)
-        {
-            availableDirs.push_back(dir);
-        }
-    }
-
-    bs::BoardShip bs = pc->GetShipPlaceInfo(availableTypes, availableDirs, board.xSize - 1, board.ySize - 1);
-
-    Console::PrintFormatted("Chosen %s type, %s dir, (%c, %d) cell\n",
-                            ShipNames.at(bs.GetType()),
-                            ShipDirsNames.at(bs.GetDirection()),
-                            Console::CoordToLetter(bs.GetCoordinate().GetX()),
-                            bs.GetCoordinate().GetY());
-
-    pc->ReceiveShipPlaceResult(logic.PlaceShip(bs));
-}
-
-void bs::ConsoleView::Do()
+void bs::ConsoleView::Do(bool revealPlayer1, bool revealPlayer2)
 {
     bool finished = false;
     while (!finished)
     {
-        auto state = logic.GetState();
+        Console::Clear();
+        auto state = logic->GetState();
         switch (state)
         {
             case GameState::P1_PlaceShip:
             case GameState::P2_PlaceShip:
-                Console::PrintFormatted("STAGE 1: Placing ships\nPlayer %d turn\n",
-                                        (state == GameState::P1_PlaceShip) ? 1 : 2);
-                PlaceShip((state == GameState::P1_PlaceShip) ? pc1 : pc2);
-                PrintAllyBoard(logic.GetBoard());
+            {
+                bool reveal = (state == GameState::P1_PlaceShip) ? revealPlayer1 : revealPlayer2;
+
+                Console::PrintColored("STAGE 1: PLACING SHIPS\n", Console::ForegroundColor::Cyan,
+                                      Console::BackgroundColor::Black, Console::TextStyle::Bold);
+                Console::PrintColoredFormatted("Player %d turn\n", Console::ForegroundColor::Green,
+                                               Console::BackgroundColor::Black, Console::TextStyle::None,
+                                               (state == GameState::P1_PlaceShip) ? 1 : 2);
+
+                const auto& curBoard = logic->GetAllyBoard();
+
+                if (reveal)
+                {
+                    Console::PrintColored("\nYour board:\n", Console::ForegroundColor::Cyan);
+                    PrintAllyBoard(curBoard);
+                    Console::PrintLine();
+                }
+
+                PlaceShip((state == GameState::P1_PlaceShip) ? *pc1 : *pc2, curBoard);
+
+                if (reveal)
+                {
+                    PrintAllyBoard(curBoard);
+                }
                 break;
+            }
             case GameState::P1_Shoot:
-                break;
             case GameState::P2_Shoot:
+            {
+                bool reveal = (state == GameState::P1_Shoot) ? revealPlayer1 : revealPlayer2;
+
+                Console::PrintColored("STAGE 2: SHOOTING\n", Console::ForegroundColor::Cyan,
+                                      Console::BackgroundColor::Black, Console::TextStyle::Bold);
+                Console::PrintColoredFormatted("Player %d turn\n", Console::ForegroundColor::Green,
+                                               Console::BackgroundColor::Black, Console::TextStyle::None,
+                                               (state == GameState::P1_Shoot) ? 1 : 2);
+
+                const auto& enemyBoard = logic->GetEnemyBoard();
+                if (reveal)
+                {
+                    Console::PrintColored("\nYour board:\n\n", Console::ForegroundColor::Yellow);
+                    PrintAllyBoard(logic->GetAllyBoard());
+                    Console::PrintColored("\nYour opponent's board:\n\n", Console::ForegroundColor::Cyan);
+                    PrintEnemyBoard(enemyBoard);
+                }
+                Shoot((state == GameState::P1_Shoot) ? *pc1 : *pc2, enemyBoard);
+
+                if (reveal)
+                {
+                    PrintEnemyBoard(enemyBoard);
+                }
+
                 break;
+            }
             case GameState::P1_Win:
-                finished = true;
-                break;
             case GameState::P2_Win:
+            {
+                Console::PrintFormatted("Player %d won the game!\n", (state == GameState::P1_Win) ? 1 : 2);
                 finished = true;
                 break;
+            }
         }
+        if (!finished)
+            Console::PrintLine("Press Enter to go to the next step.");
+        else
+            Console::PrintLine("Press Enter to exit");
+        Console::GetLine();
     }
 }
+

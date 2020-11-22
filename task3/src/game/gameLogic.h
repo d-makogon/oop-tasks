@@ -1,7 +1,8 @@
 #pragma once
 
+#include <memory>
+
 #include "board/board.h"
-#include "../playerControllers/playerController.h"
 
 namespace bs
 {
@@ -19,23 +20,22 @@ namespace bs
     class GameLogic
     {
     private:
-        // todo: smart ptrs
-        Board board1;
-        Board board2;
+        std::unique_ptr<Board> board1;
+        std::unique_ptr<Board> board2;
 
         GameState state;
+
     public:
-        GameLogic() : state(GameState::P1_PlaceShip) {}
+        GameLogic() : state(GameState::P1_PlaceShip),
+                      board1(std::make_unique<Board>()),
+                      board2(std::make_unique<Board>()) {}
 
         bs::ShipPlacementResult PlaceShip(const bs::BoardShip& shipInfo);
 
         bs::ShotResult Shoot(const bs::Coordinate& coord);
 
-        const bs::Board& GetBoard() const;
-
-        // const bs::Board& GetAllyBoard() const;
-
-        // const bs::Board& GetEnemyBoard() const;
+        const Board& GetAllyBoard() const;
+        const Board& GetEnemyBoard() const;
 
         GameState GetState() const;
     };
