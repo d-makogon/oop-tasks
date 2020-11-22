@@ -92,10 +92,14 @@ bs::ShipType ChooseShipType(const std::vector<bs::ShipType>& availableTypes)
     // todo: make sth like exit cmd
     while (!TryGetIntOption(1, curOption - 1, option))
     {
-        Console::PrintLine("Wrong option. Try again.");
+        Console::PrintColored("Wrong option. Try again.\n", Console::ForegroundColor::Red);
     }
 
-    Console::PrintFormatted("You chose %s type.\n", bs::ShipNames.at(availableTypes[option - 1]));
+    Console::PrintColoredFormatted("You chose %s type.\n",
+                                   Console::ForegroundColor::Green,
+                                   Console::BackgroundColor::Black,
+                                   Console::TextStyle::Bold,
+                                   bs::ShipNames.at(availableTypes[option - 1]));
 
     return availableTypes[option - 1];
 }
@@ -114,25 +118,33 @@ bs::ShipDirection ChooseShipDir(const std::vector<bs::ShipDirection>& availableD
     int option;
     while (!TryGetIntOption(1, curOption - 1, option))
     {
-        Console::PrintLine("Wrong option. Try again.");
+        Console::PrintColored("Wrong option. Try again.\n", Console::ForegroundColor::Red);
     }
 
-    Console::PrintFormatted("You chose %s direction.\n", bs::ShipDirsNames.at(availableDirs[option - 1]));
+    Console::PrintColoredFormatted("You chose %s direction.\n",
+                                   Console::ForegroundColor::Green,
+                                   Console::BackgroundColor::Black,
+                                   Console::TextStyle::Bold,
+                                   bs::ShipDirsNames.at(availableDirs[option - 1]));
 
     return availableDirs[option - 1];
 }
 
-bs::Coordinate ChooseShipCoord(const int& maxX, const int& maxY)
+bs::Coordinate ChooseShipCoord(int maxX, int maxY)
 {
     Console::PrintLine("Choose coordinate for first cell: ");
 
     bs::Coordinate coord;
     while (!TryGetCoordinate(maxX, maxY, coord))
     {
-        Console::PrintLine("Wrong coordinate. Try again.");
+        Console::PrintColored("Wrong coordinate. Try again.\n", Console::ForegroundColor::Red);
     }
 
-    Console::PrintFormatted("You chose (%c, %d) cell.\n", Console::CoordToLetter(coord.GetX()), coord.GetY());
+    Console::PrintColoredFormatted("You chose (%c, %d) cell.\n",
+                                   Console::ForegroundColor::Green,
+                                   Console::BackgroundColor::Black,
+                                   Console::TextStyle::Bold,
+                                   Console::CoordToLetter(coord.GetX()), coord.GetY());
 
     return coord;
 }
@@ -142,7 +154,8 @@ bs::BoardShip bs::ConsolePlayerController::GetShipPlaceInfo(const std::vector<Sh
                                                             int maxXcoord,
                                                             int maxYcoord)
 {
-    return bs::BoardShip(ChooseShipCoord(maxXcoord, maxYcoord), ChooseShipDir(availableDirs),
+    return bs::BoardShip(ChooseShipCoord(maxXcoord, maxYcoord),
+                         ChooseShipDir(availableDirs),
                          ChooseShipType(availableTypes));
 }
 
@@ -151,19 +164,24 @@ void bs::ConsolePlayerController::ReceiveShipPlaceResult(const bs::ShipPlacement
     switch (result)
     {
         case ShipPlacementResult::MaxTypeAmountReached:
-            Console::PrintLine("\nMax amount of ships of this type reached.\n");
+            Console::PrintColored("\nMax amount of ships of this type reached.\n",
+                                  Console::ForegroundColor::Red);
             break;
         case ShipPlacementResult::NotEnoughSpace:
-            Console::PrintLine("\nNot enough space.\n");
+            Console::PrintColored("\nNot enough space.\n",
+                                  Console::ForegroundColor::Red);
             break;
         case ShipPlacementResult::Overlap:
-            Console::PrintLine("\nNew ship overlaps another one.\n");
+            Console::PrintColored("\nNew ship overlaps another one.\n",
+                                  Console::ForegroundColor::Red);
             break;
         case ShipPlacementResult::MaxAmountReached:
-            Console::PrintLine("\nMax ships amount reached.\n");
+            Console::PrintColored("\nMax ships amount reached.\n",
+                                  Console::ForegroundColor::Red);
             break;
         case ShipPlacementResult::Success:
-            Console::PrintLine("\nSuccessfully placed a ship.\n");
+            Console::PrintColored("\nSuccessfully placed a ship.\n",
+                                  Console::ForegroundColor::Green);
             break;
         default:
             break;
