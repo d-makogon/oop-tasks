@@ -12,7 +12,7 @@ bs::Board::Board()
         shipsCount[type] = 0;
         maxShips += maxCount;
     }
-    this->ships.reserve(maxShips);
+    ships.reserve(maxShips);
 }
 
 bs::ShotResult bs::Board::Fire(const bs::Coordinate& coord)
@@ -167,7 +167,7 @@ bool bs::Board::AreSurroundingCellsEmpty(const Coordinate& coord)
     int y = coord.GetY();
 
     // @formatter:off
-    std::vector<Coordinate> surCell = {
+    std::vector<Coordinate> surCells = {
             {x - 1, y - 1}, {x, y - 1}, {x + 1, y - 1},
             {x - 1, y},     {x, y},     {x + 1, y},
             {x - 1, y + 1}, {x, y + 1}, {x + 1, y + 1}
@@ -175,7 +175,7 @@ bool bs::Board::AreSurroundingCellsEmpty(const Coordinate& coord)
     // @formatter:on
 
     // return true if none of surrounding cells has a ship on it
-    return !std::any_of(surCell.begin(), surCell.end(), [this](const Coordinate& c) { return CheckForShip(c); });
+    return !std::any_of(surCells.begin(), surCells.end(), [this](const Coordinate& c) { return CheckForShip(c); });
 }
 
 bs::ShotHistory bs::Board::GetHistoryAt(const Coordinate& coord) const
@@ -194,7 +194,7 @@ bool bs::Board::CanPlaceShips() const
     return ships.size() < maxShips;
 }
 
-std::map<bs::ShipType, int> bs::Board::GetMaxShipsAmount() const
+std::map<bs::ShipType, int> bs::Board::GetAvailableShipsAmount() const
 {
     auto result = shipsCount;
     for (auto&[type, count] : result)
@@ -209,7 +209,12 @@ bool bs::Board::CanPlaceShipOfType(const bs::ShipType& type) const
     return shipsCount.at(type) < ShipsMaxAmount.at(type);
 }
 
-int bs::Board::GetMaxShips() const
+int bs::Board::GetMaxShipsCount() const
 {
     return maxShips;
+}
+
+const std::map<bs::Coordinate, bs::ShotHistory>& bs::Board::GetShotHistory() const
+{
+    return shotHistory;
 }

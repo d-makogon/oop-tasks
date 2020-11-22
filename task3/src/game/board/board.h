@@ -58,8 +58,10 @@ namespace bs
 
         bool CanPlaceShipOfType(const ShipType& type) const;
 
-        int GetMaxShips() const;
+        int GetMaxShipsCount() const;
 
-        std::map<ShipType, int> GetMaxShipsAmount() const;
+        const std::map<Coordinate, ShotHistory>& GetShotHistory() const;
+
+        std::map<ShipType, int> GetAvailableShipsAmount() const;
     };
 }

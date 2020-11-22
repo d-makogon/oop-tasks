@@ -12,9 +12,9 @@ namespace bs
     };
 
     const std::map<ShipDirection, const char* const> ShipDirsNames = {
-            {ShipDirection::Up, "Up"},
-            {ShipDirection::Down, "Down"},
-            {ShipDirection::Left, "Left"},
+            {ShipDirection::Up,    "Up"},
+            {ShipDirection::Down,  "Down"},
+            {ShipDirection::Left,  "Left"},
             {ShipDirection::Right, "Right"},
     };
 
@@ -29,8 +29,11 @@ namespace bs
         BoardShip(const Coordinate& coord, const ShipDirection& dir, const ShipType& shipType) : coordinate(coord),
                                                                                                  direction(dir),
                                                                                                  type(shipType) {}
+
         Coordinate GetCoordinate() const;
+
         ShipDirection GetDirection() const;
+
         ShipType GetType() const;
     };
 }
