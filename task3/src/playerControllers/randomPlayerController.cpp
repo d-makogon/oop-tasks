@@ -14,13 +14,23 @@ bs::BoardShip bs::RandomPlayerController::GetShipPlaceInfo(const std::vector<Shi
                                                            int maxXcoord,
                                                            int maxYcoord)
 {
-    // todo: test random (is it truly random?)
     return bs::BoardShip({GetRandomInRange(0, maxXcoord), GetRandomInRange(0, maxYcoord)},
                          GetRandomInArray<ShipDirection>(availableDirs),
                          GetRandomInArray<ShipType>(availableTypes));
 }
 
 void bs::RandomPlayerController::ReceiveShipPlaceResult(const bs::ShipPlacementResult& result)
+{
+
+}
+
+bs::Coordinate
+bs::RandomPlayerController::GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory)
+{
+    return {GetRandomInRange(0, maxX), GetRandomInRange(0, maxY)};
+}
+
+void bs::RandomPlayerController::ReceiveShotResult(const bs::ShotResult& shotResult)
 {
 
 }

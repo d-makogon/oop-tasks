@@ -17,11 +17,10 @@ namespace bs
 
         virtual void ReceiveShipPlaceResult(const ShipPlacementResult& result) = 0;
 
-        // virtual bs::ShipType ChooseShipType(const std::vector<ShipType>& availableTypes) const = 0;
-        //
-        // virtual bs::ShipDirection ChooseShipDir(const std::vector<ShipDirection>& availableDirs) const = 0;
-        //
-        // virtual bs::Coordinate ChooseShipCoord(const int& maxX, const int& maxY) const = 0;
+        virtual Coordinate
+        GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory) = 0;
+
+        virtual void ReceiveShotResult(const ShotResult& shotResult) = 0;
 
         virtual ~PlayerController() = default;
     };
