@@ -4,22 +4,22 @@
 #include <functional>
 #include <map>
 
-bs::ConsoleView::CellType bs::ConsoleView::FromHistory(const bs::ShotHistory& shotHistory)
+bs::ConsoleView::CellChar bs::ConsoleView::FromHistory(const bs::ShotHistory& shotHistory)
 {
     switch (shotHistory)
     {
         case bs::ShotHistory::Miss:
-            return CellType::Miss;
+            return CellChar::Miss;
 
         case bs::ShotHistory::Hit:
-            return CellType::Hit;
+            return CellChar::Hit;
 
         default:
-            return CellType::Empty;
+            return CellChar::Empty;
     }
 }
 
-void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellType(const bs::Coordinate&)>& getCellFunc)
+void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellChar(const bs::Coordinate&)>& getCellFunc)
 {
     // todo: if board is > 10?
     // print row with X coordinates
@@ -42,8 +42,33 @@ void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellTyp
         for (int x = 0; x < maxY; x++)
         {
             // print cell
-            CellType cell = getCellFunc({x, y});
-            Console::Print(static_cast<char>(cell), "|");
+            CellChar cell = getCellFunc({x, y});
+            switch (cell)
+            {
+                // todo: map with all print parameters !
+                case CellChar::Ship:
+                    Console::PrintColored(static_cast<char>(cell),
+                                          Console::ForegroundColor::Cyan,
+                                          Console::BackgroundColor::Black,
+                                          Console::TextStyle::Bold);
+                    break;
+                case CellChar::Hit:
+                    Console::PrintColored(static_cast<char>(cell),
+                                          Console::ForegroundColor::Green,
+                                          Console::BackgroundColor::Black,
+                                          Console::TextStyle::Bold);
+                    break;
+                case CellChar::Miss:
+                    Console::PrintColored(static_cast<char>(cell),
+                                          Console::ForegroundColor::Red,
+                                          Console::BackgroundColor::Black,
+                                          Console::TextStyle::Bold);
+                    break;
+                case CellChar::Empty:
+                    Console::Print(" ");
+                    break;
+            }
+            Console::Print("|");
         }
         Console::PrintLine();
     }
@@ -62,7 +87,7 @@ void bs::ConsoleView::PrintAllyBoard(const bs::Board& board)
         auto history = board.GetHistoryAt(coord);
         if (history == bs::ShotHistory::Unknown)
         {
-            return board.CheckForShip(coord) ? CellType::Ship : CellType::Empty;
+            return board.CheckForShip(coord) ? CellChar::Ship : CellChar::Empty;
         }
         return FromHistory(history);
     });

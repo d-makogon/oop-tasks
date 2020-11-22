@@ -11,7 +11,7 @@ namespace bs
     class ConsoleView : public GameView
     {
     private:
-        enum class CellType : char
+        enum class CellChar : char
         {
             Ship = '*',
             Hit = 'H',
@@ -19,21 +19,20 @@ namespace bs
             Empty = ' ',
         };
 
-        void PlaceShip(PlayerController* pc);
-
         static void PrintEnemyBoard(const bs::Board& board);
 
         static void PrintAllyBoard(const bs::Board& board);
 
-        static void PrintBoard(int maxX, int maxY, const std::function<CellType(const bs::Coordinate&)>& getCellFunc);
+        static void PrintBoard(int maxX, int maxY, const std::function<CellChar(const bs::Coordinate&)>& getCellFunc);
 
-        static CellType FromHistory(const bs::ShotHistory& shotHistory);
+        static CellChar FromHistory(const bs::ShotHistory& shotHistory);
 
     public:
-        explicit ConsoleView(GameLogic logic, PlayerController* pc1, PlayerController* pc2) : GameView(std::move(logic),
-                                                                                                       pc1,
-                                                                                                       pc2) {}
+        explicit ConsoleView(std::unique_ptr<GameLogic> logic, std::unique_ptr<PlayerController> pc1,
+                             std::unique_ptr<PlayerController> pc2) : GameView(std::move(logic),
+                                                                               std::move(pc1),
+                                                                               std::move(pc2)) {}
 
-        void Do() override;
+        void Do(bool revealPlayer1, bool revealPlayer2) override;
     };
 }
