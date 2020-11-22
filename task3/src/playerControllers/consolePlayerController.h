@@ -13,5 +13,9 @@ namespace bs
                                    int maxYcoord) override;
 
         void ReceiveShipPlaceResult(const ShipPlacementResult& result) override;
+
+        Coordinate GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory) override;
+
+        void ReceiveShotResult(const ShotResult& shotResult) override;
     };
 }

@@ -187,3 +187,53 @@ void bs::ConsolePlayerController::ReceiveShipPlaceResult(const bs::ShipPlacement
             break;
     }
 }
+
+bs::Coordinate
+bs::ConsolePlayerController::GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory)
+{
+    Console::PrintLine("Choose shot destination: ");
+
+    bs::Coordinate coord;
+    while (!TryGetCoordinate(maxX, maxY, coord))
+    {
+        Console::PrintColored("Wrong coordinate. Try again.\n", Console::ForegroundColor::Red);
+    }
+
+    Console::PrintColoredFormatted("You chose (%c, %d).\n",
+                                   Console::ForegroundColor::Green,
+                                   Console::BackgroundColor::Black,
+                                   Console::TextStyle::Bold,
+                                   Console::CoordToLetter(coord.GetX()), coord.GetY());
+    return coord;
+}
+
+void bs::ConsolePlayerController::ReceiveShotResult(const bs::ShotResult& shotResult)
+{
+    switch (shotResult)
+    {
+        case ShotResult::Hit:
+            Console::PrintColored("\nYou hit a ship!\n",
+                                  Console::ForegroundColor::Green);
+            break;
+        case ShotResult::Invalid:
+            Console::PrintColored("\nInvalid coordinate.\n",
+                                  Console::ForegroundColor::Red);
+            break;
+        case ShotResult::Duplicate:
+            Console::PrintColored("\nYou already shot at this coordinate.\n",
+                                  Console::ForegroundColor::Red);
+            break;
+        case ShotResult::Miss:
+            Console::PrintColored("\nYou missed.\n",
+                                  Console::ForegroundColor::Yellow);
+            break;
+        case ShotResult::HitAndSunk:
+            Console::PrintColored("\nYou sunk a ship!\n",
+                                  Console::ForegroundColor::Green);
+            break;
+        case ShotResult::Victory:
+            Console::PrintColored("\nYou sunk last ship and won the game!\n",
+                                  Console::ForegroundColor::Green);
+            break;
+    }
+}
