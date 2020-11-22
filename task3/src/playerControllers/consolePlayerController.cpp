@@ -46,7 +46,10 @@ bool TryGetIntOption(int rangeStart, int rangeEnd, int& choice)
     }
 
     int input;
-    if (std::cin >> input)
+    const auto& readSuccess = std::cin >> input;
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    if (readSuccess)
     {
         if (input >= rangeStart && input <= rangeEnd)
         {
@@ -55,8 +58,6 @@ bool TryGetIntOption(int rangeStart, int rangeEnd, int& choice)
         }
         return false;
     }
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return false;
 }
 
