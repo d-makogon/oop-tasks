@@ -6,44 +6,79 @@
 class Console
 {
 public:
-    enum class ForegroundColor
+    struct PrintStyle
     {
-        Black = 30,
-        Red = 31,
-        Green = 32,
-        Yellow = 33,
-        Blue = 34,
-        Magenta = 35,
-        Cyan = 36,
-        White = 37
+        enum class ForegroundColor
+        {
+            Default = 0,
+            White = 37,
+            Black = 30,
+            Red = 31,
+            Green = 32,
+            Yellow = 33,
+            Blue = 34,
+            Magenta = 35,
+            Cyan = 36,
+        };
+
+        enum class BackgroundColor
+        {
+            Default = 0,
+            Black = 40,
+            Red = 41,
+            Green = 42,
+            Yellow = 43,
+            Blue = 44,
+            Magenta = 45,
+            Cyan = 46,
+            White = 47,
+        };
+
+        enum class TextStyle
+        {
+            None = 0,
+            Bold = 1,
+            Underline = 4,
+            Inverse = 7,
+        };
+
+        ForegroundColor fgColor;
+        BackgroundColor bgColor;
+        TextStyle textStyle;
+
+        friend std::ostream& operator<<(std::ostream& os, const Console::PrintStyle& style);
     };
 
-    enum class BackgroundColor
-    {
-        Black = 40,
-        Red = 41,
-        Green = 42,
-        Yellow = 43,
-        Blue = 44,
-        Magenta = 45,
-        Cyan = 46,
-        White = 47
+    constexpr static const PrintStyle DefaultPrintStyle = {
+            PrintStyle::ForegroundColor::Default,
+            PrintStyle::BackgroundColor::Default,
+            PrintStyle::TextStyle::None,
     };
 
-    enum class TextStyle
-    {
-        None = 0,
-        Bold = 1,
-        Underline = 4,
-        Inverse = 7
+    constexpr static const PrintStyle ErrorPrintStyle = {
+            PrintStyle::ForegroundColor::Red,
+            PrintStyle::BackgroundColor::Default,
+            PrintStyle::TextStyle::Bold,
     };
 
-    static int LetterToCoord(const char& c);
+    constexpr static const PrintStyle InfoPrintStyle = {
+            PrintStyle::ForegroundColor::Yellow,
+            PrintStyle::BackgroundColor::Default,
+            PrintStyle::TextStyle::Bold,
+    };
 
-    static char CoordToLetter(const int& c);
+    constexpr static const PrintStyle OKPrintResult = {
+            PrintStyle::ForegroundColor::Green,
+            PrintStyle::BackgroundColor::Default,
+            PrintStyle::TextStyle::Bold,
+    };
+
+    static int CharToInt(const char& c);
+
+    static char IntToChar(const int& c);
 
     template<typename T>
-    static void Print(T t)
+    static void Print(const T& t)
     {
         std::cout << t;
     }
@@ -56,26 +91,56 @@ public:
     }
 
     template<typename T>
-    static void PrintColored(const T& t,
-                             Console::ForegroundColor fgColor = Console::ForegroundColor::White,
-                             Console::BackgroundColor bgColor = Console::BackgroundColor::Black,
-                             Console::TextStyle style = Console::TextStyle::None)
+    static void PrintColored(const T& t, const PrintStyle& style = DefaultPrintStyle)
     {
-        std::cout << "\033[" << static_cast<int>(style) << ";" << static_cast<int>(bgColor) << ";"
-                  << static_cast<int>(fgColor) << "m" << t << "\033[0m";
+        std::cout << style << t << DefaultPrintStyle;
+    }
+
+    template<typename T>
+    static void PrintColored(const T& t, const PrintStyle::ForegroundColor& fgColor)
+    {
+        auto style = DefaultPrintStyle;
+        style.fgColor = fgColor;
+        std::cout << style << t << DefaultPrintStyle;
     }
 
     template<typename... Args>
     static void
-    PrintColoredFormatted(const std::string& s, Console::ForegroundColor fgColor, Console::BackgroundColor bgColor,
-                          Console::TextStyle style, const Args& ... args)
+    PrintColoredFormatted(const std::string& s, const PrintStyle& style, const Args& ... args)
     {
-        std::cout << "\033[" << static_cast<int>(style) << ";" << static_cast<int>(bgColor) << ";"
-                  << static_cast<int>(fgColor) << "m";
+        std::cout << style;
         PrintFormatted(s, args...);
-        std::cout << "\033[0m";
+        std::cout << DefaultPrintStyle;
     }
 
+    template<typename... Args>
+    static void
+    PrintColoredFormatted(const std::string& s, const PrintStyle::ForegroundColor& fgColor, const Args& ... args)
+    {
+        auto style = DefaultPrintStyle;
+        style.fgColor = fgColor;
+        std::cout << style;
+        PrintFormatted(s, args...);
+        std::cout << DefaultPrintStyle;
+    }
+
+    template<typename... Args>
+    static void PrintError(const std::string& s, const Args& ... args)
+    {
+        PrintColoredFormatted(s, ErrorPrintStyle, args...);
+    }
+
+    template<typename... Args>
+    static void PrintInfo(const std::string& s, const Args& ... args)
+    {
+        PrintColoredFormatted(s, InfoPrintStyle, args...);
+    }
+
+    template<typename... Args>
+    static void PrintOK(const std::string& s, const Args& ... args)
+    {
+        PrintColoredFormatted(s, OKPrintResult, args...);
+    }
 
     template<typename... Args>
     static void PrintFormatted(const std::string& s, const Args& ... args)

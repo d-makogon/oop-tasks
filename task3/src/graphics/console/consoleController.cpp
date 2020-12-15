@@ -1,14 +1,15 @@
 #include "consoleController.h"
 
 #include <string>
+#include <tuple>
 #include <iostream>
 
-int Console::LetterToCoord(const char& c)
+int Console::CharToInt(const char& c)
 {
     return tolower(c) - 'a';
 }
 
-char Console::CoordToLetter(const int& c)
+char Console::IntToChar(const int& c)
 {
     return tolower(c) + 'a';
 }
@@ -31,10 +32,20 @@ void Console::Clear()
 #include <conio.h>
     clrscr();
 #elif defined (__LINUX__) || defined(__gnu_linux__) || defined(__linux__)
-    system("clear");
-    // std::cout<< u8"\033[2J\033[1;1H";
+    std::cout << u8"\033[2J\033[1;1H";
 #elif defined (__APPLE__)
     system("clear");
 #endif
 }
 
+std::ostream& operator<<(std::ostream& os, const Console::PrintStyle& style)
+{
+    os << "\033[";
+    os << static_cast<int>(style.textStyle) << ";";
+    if (style.bgColor != Console::PrintStyle::BackgroundColor::Default)
+        os << static_cast<int>(style.bgColor) << ";";
+    if (style.fgColor != Console::PrintStyle::ForegroundColor::Default)
+        os << static_cast<int>(style.fgColor);
+    os << "m";
+    return os;
+}

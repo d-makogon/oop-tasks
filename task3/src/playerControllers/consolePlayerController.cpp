@@ -64,11 +64,11 @@ bool TryGetIntOption(int rangeStart, int rangeEnd, int& choice)
 bool TryGetCoordinate(int maxX, int maxY, bs::Coordinate& coordinate)
 {
     Console::PrintFormatted("Type coordinate in format xy (%c <= x <= %c; %d <= y <= %d): ",
-                            Console::CoordToLetter(0), Console::CoordToLetter(maxX), 0, maxY);
+                            Console::IntToChar(0), Console::IntToChar(maxX), 0, maxY);
     std::string s = Console::GetLine();
     if (s.length() < 2) return false;
 
-    int x = Console::LetterToCoord(s[0]);
+    int x = Console::CharToInt(s[0]);
     int y;
     if (!str2T(s.substr(1), y)) return false;
     if (x < 0 || x > maxX || y < 0 || y > maxY) return false;
@@ -76,7 +76,7 @@ bool TryGetCoordinate(int maxX, int maxY, bs::Coordinate& coordinate)
     return true;
 }
 
-bs::ShipType ChooseShipType(const std::vector<bs::ShipType>& availableTypes)
+bs::ShipType ChooseShipType(const std::vector<std::pair<bs::ShipType, int>>& availableTypes)
 {
     Console::PrintLine("Choose one of available ship types: ");
 
@@ -84,7 +84,8 @@ bs::ShipType ChooseShipType(const std::vector<bs::ShipType>& availableTypes)
 
     for (auto& type : availableTypes)
     {
-        Console::PrintFormatted("%d - %s : %d cells\n", curOption, bs::ShipNames.at(type), bs::ShipSizes.at(type));
+        Console::PrintFormatted("%d - %s : %d cells : %d left\n", curOption, bs::ShipNames.at(type.first),
+                                bs::ShipSizes.at(type.first), type.second);
         curOption++;
     }
 
@@ -92,16 +93,12 @@ bs::ShipType ChooseShipType(const std::vector<bs::ShipType>& availableTypes)
     // todo: make sth like exit cmd
     while (!TryGetIntOption(1, curOption - 1, option))
     {
-        Console::PrintColored("Wrong option. Try again.\n", Console::ForegroundColor::Red);
+        Console::PrintError("Wrong option. Try again.\n");
     }
 
-    Console::PrintColoredFormatted("You chose %s type.\n",
-                                   Console::ForegroundColor::Green,
-                                   Console::BackgroundColor::Black,
-                                   Console::TextStyle::Bold,
-                                   bs::ShipNames.at(availableTypes[option - 1]));
+    Console::PrintOK("You chose %s type.\n", bs::ShipNames.at(availableTypes[option - 1].first));
 
-    return availableTypes[option - 1];
+    return availableTypes[option - 1].first;
 }
 
 bs::ShipDirection ChooseShipDir(const std::vector<bs::ShipDirection>& availableDirs)
@@ -118,14 +115,10 @@ bs::ShipDirection ChooseShipDir(const std::vector<bs::ShipDirection>& availableD
     int option;
     while (!TryGetIntOption(1, curOption - 1, option))
     {
-        Console::PrintColored("Wrong option. Try again.\n", Console::ForegroundColor::Red);
+        Console::PrintError("Wrong option. Try again.\n");
     }
 
-    Console::PrintColoredFormatted("You chose %s direction.\n",
-                                   Console::ForegroundColor::Green,
-                                   Console::BackgroundColor::Black,
-                                   Console::TextStyle::Bold,
-                                   bs::ShipDirsNames.at(availableDirs[option - 1]));
+    Console::PrintOK("You chose %s direction.\n", bs::ShipDirsNames.at(availableDirs[option - 1]));
 
     return availableDirs[option - 1];
 }
@@ -137,26 +130,25 @@ bs::Coordinate ChooseShipCoord(int maxX, int maxY)
     bs::Coordinate coord;
     while (!TryGetCoordinate(maxX, maxY, coord))
     {
-        Console::PrintColored("Wrong coordinate. Try again.\n", Console::ForegroundColor::Red);
+        Console::PrintError("Wrong coordinate. Try again.\n");
     }
 
-    Console::PrintColoredFormatted("You chose (%c, %d) cell.\n",
-                                   Console::ForegroundColor::Green,
-                                   Console::BackgroundColor::Black,
-                                   Console::TextStyle::Bold,
-                                   Console::CoordToLetter(coord.GetX()), coord.GetY());
+    Console::PrintOK("You chose (%c, %d) cell.\n", Console::IntToChar(coord.GetX()), coord.GetY());
 
     return coord;
 }
 
-bs::BoardShip bs::ConsolePlayerController::GetShipPlaceInfo(const std::vector<ShipType>& availableTypes,
-                                                            const std::vector<ShipDirection>& availableDirs,
-                                                            int maxXcoord,
-                                                            int maxYcoord)
+bs::BoardShip
+bs::ConsolePlayerController::GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
+                                              const std::vector<ShipDirection>& availableDirs,
+                                              int maxXcoord,
+                                              int maxYcoord)
 {
-    return bs::BoardShip(ChooseShipCoord(maxXcoord, maxYcoord),
-                         ChooseShipDir(availableDirs),
-                         ChooseShipType(availableTypes));
+    auto type = ChooseShipType(availableTypes);
+    auto shipDir = ChooseShipDir(availableDirs);
+    auto coord = ChooseShipCoord(maxXcoord, maxYcoord);
+
+    return bs::BoardShip(coord, shipDir, type);
 }
 
 void bs::ConsolePlayerController::ReceiveShipPlaceResult(const bs::ShipPlacementResult& result)
@@ -164,24 +156,19 @@ void bs::ConsolePlayerController::ReceiveShipPlaceResult(const bs::ShipPlacement
     switch (result)
     {
         case ShipPlacementResult::MaxTypeAmountReached:
-            Console::PrintColored("\nMax amount of ships of this type reached.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nMax amount of ships of this type reached.\n");
             break;
         case ShipPlacementResult::NotEnoughSpace:
-            Console::PrintColored("\nNot enough space.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nNot enough space.\n");
             break;
         case ShipPlacementResult::Overlap:
-            Console::PrintColored("\nNew ship overlaps another one.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nNew ship overlaps another one.\n");
             break;
         case ShipPlacementResult::MaxAmountReached:
-            Console::PrintColored("\nMax ships amount reached.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nMax ships amount reached.\n");
             break;
         case ShipPlacementResult::Success:
-            Console::PrintColored("\nSuccessfully placed a ship.\n",
-                                  Console::ForegroundColor::Green);
+            Console::PrintOK("\nSuccessfully placed a ship.\n");
             break;
         default:
             break;
@@ -189,51 +176,76 @@ void bs::ConsolePlayerController::ReceiveShipPlaceResult(const bs::ShipPlacement
 }
 
 bs::Coordinate
-bs::ConsolePlayerController::GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory)
+bs::ConsolePlayerController::GetShootPosition(const bs::Board& enemyBoard)
 {
     Console::PrintLine("Choose shot destination: ");
 
     bs::Coordinate coord;
-    while (!TryGetCoordinate(maxX, maxY, coord))
+    while (!TryGetCoordinate(enemyBoard.xSize - 1, enemyBoard.ySize - 1, coord))
     {
-        Console::PrintColored("Wrong coordinate. Try again.\n", Console::ForegroundColor::Red);
+        Console::PrintError("Wrong coordinate. Try again.\n");
     }
 
-    Console::PrintColoredFormatted("You chose (%c, %d).\n",
-                                   Console::ForegroundColor::Green,
-                                   Console::BackgroundColor::Black,
-                                   Console::TextStyle::Bold,
-                                   Console::CoordToLetter(coord.GetX()), coord.GetY());
+    Console::PrintOK("You chose (%c, %d).\n", Console::IntToChar(coord.GetX()), coord.GetY());
     return coord;
 }
 
-void bs::ConsolePlayerController::ReceiveShotResult(const bs::ShotResult& shotResult)
+void bs::ConsolePlayerController::ReceiveAllyShotResult(const bs::ShotResult& shotResult)
 {
     switch (shotResult)
     {
         case ShotResult::Hit:
-            Console::PrintColored("\nYou hit a ship!\n",
-                                  Console::ForegroundColor::Green);
+            Console::PrintOK("\nYou hit a ship!\n");
             break;
         case ShotResult::Invalid:
-            Console::PrintColored("\nInvalid coordinate.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nInvalid coordinate.\n");
             break;
         case ShotResult::Duplicate:
-            Console::PrintColored("\nYou already shot at this coordinate.\n",
-                                  Console::ForegroundColor::Red);
+            Console::PrintError("\nYou already shot at this coordinate.\n");
             break;
         case ShotResult::Miss:
-            Console::PrintColored("\nYou missed.\n",
-                                  Console::ForegroundColor::Yellow);
+            Console::PrintInfo("\nYou missed.\n");
             break;
         case ShotResult::HitAndSunk:
-            Console::PrintColored("\nYou sunk a ship!\n",
-                                  Console::ForegroundColor::Green);
+            Console::PrintOK("\nYou sunk a ship!\n");
             break;
         case ShotResult::Victory:
-            Console::PrintColored("\nYou sunk last ship and won the game!\n",
-                                  Console::ForegroundColor::Green);
+            Console::PrintOK("\nYou sunk last ship and won the game!\n");
             break;
+    }
+}
+
+void bs::ConsolePlayerController::ReceiveEnemyShotResult(const bs::Coordinate& coord, const bs::ShotResult& shotResult)
+{
+    Console::PrintColoredFormatted("Other player shot at %c%d.\n", Console::PrintStyle::ForegroundColor::Yellow,
+                                   Console::IntToChar(coord.GetX()), coord.GetY());
+    switch (shotResult)
+    {
+        case ShotResult::Invalid:
+        case ShotResult::Duplicate:
+        case ShotResult::Miss:
+            Console::PrintInfo("\tThey missed\n");
+            break;
+        case ShotResult::Hit:
+            Console::PrintInfo("\tThey hit a ship\n");
+            break;
+        case ShotResult::HitAndSunk:
+            Console::PrintInfo("\tThey sunk a ship\n");
+            break;
+        default:
+            break;
+    }
+}
+
+bool bs::ConsolePlayerController::GetTrueOrFalse(const std::string& msg)
+{
+    while (true)
+    {
+        Console::PrintInfo(msg);
+        Console::Print(" (y/n): ");
+        auto s = Console::GetLine();
+        if (s == "y") return true;
+        if (s == "n") return false;
+        Console::PrintError("Wrong option. Try again.\n");
     }
 }
