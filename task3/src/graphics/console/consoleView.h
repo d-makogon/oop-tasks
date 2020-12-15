@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <functional>
+#include <map>
 
 #include "../gameView.h"
 #include "consoleController.h"
@@ -15,9 +16,14 @@ namespace bs
         {
             Ship = '*',
             Hit = 'H',
+            HitAndSunk = 'X',
             Miss = 'M',
             Empty = ' ',
         };
+
+        using CellStylesMap = std::map<CellChar, Console::PrintStyle>;
+
+        static const CellStylesMap CellStyles;
 
         static void PrintEnemyBoard(const bs::Board& board);
 
@@ -33,6 +39,6 @@ namespace bs
                                                                                std::move(pc1),
                                                                                std::move(pc2)) {}
 
-        void Do(bool revealPlayer1, bool revealPlayer2) override;
+        void Do() override;
     };
 }

@@ -7,15 +7,21 @@ namespace bs
     class ConsolePlayerController : public PlayerController
     {
     public:
-        BoardShip GetShipPlaceInfo(const std::vector<ShipType>& availableTypes,
+        BoardShip GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
                                    const std::vector<ShipDirection>& availableDirs,
                                    int maxXcoord,
                                    int maxYcoord) override;
 
         void ReceiveShipPlaceResult(const ShipPlacementResult& result) override;
 
-        Coordinate GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory) override;
+        Coordinate GetShootPosition(const bs::Board& enemyBoard) override;
 
-        void ReceiveShotResult(const ShotResult& shotResult) override;
+        void ReceiveEnemyShotResult(const bs::Coordinate& coord, const ShotResult& shotResult) override;
+
+        bool GetTrueOrFalse(const std::string& msg) override;
+
+        bool IsHuman() const override { return true; }
+
+        void ReceiveAllyShotResult(const ShotResult& shotResult) override;
     };
 }

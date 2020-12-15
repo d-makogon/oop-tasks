@@ -1,38 +1,43 @@
 #include "gameView.h"
+#include "../utility/random.h"
 
-void bs::GameView::PlaceShip(PlayerController& pc, const Board& board)
+std::vector<bs::ShipDirection> GetDirs()
 {
-    std::vector<ShipType> availableTypes;
-    for (auto&[type, count] : board.GetAvailableShipsAmount())
-    {
-        if (count > 0) availableTypes.push_back(type);
-    }
-
-
-    static std::vector<ShipDirection> availableDirs;
+    static std::vector<bs::ShipDirection> availableDirs;
     if (availableDirs.empty())
     {
-        availableDirs.reserve(ShipDirsNames.size());
-        for (auto&[dir, name] : ShipDirsNames)
+        availableDirs.reserve(bs::ShipDirsNames.size());
+        for (auto&[dir, name] : bs::ShipDirsNames)
         {
             availableDirs.push_back(dir);
         }
     }
+    return availableDirs;
+}
 
-    bs::BoardShip bs = pc.GetShipPlaceInfo(availableTypes, availableDirs, board.xSize - 1, board.ySize - 1);
-
-    // todo: remove this
-    // Console::PrintFormatted("Chosen %s type, %s dir, (%c, %d) cell\n",
-    //                         ShipNames.at(bs.GetType()),
-    //                         ShipDirsNames.at(bs.GetDirection()),
-    //                         Console::CoordToLetter(bs.GetCoordinate().GetX()),
-    //                         bs.GetCoordinate().GetY());
+void bs::GameView::PlaceShip(PlayerController& pc, const Board& board)
+{
+    bs::BoardShip bs = pc.GetShipPlaceInfo(board.GetAvailableShipsAmount(), GetDirs(), board.xSize - 1,
+                                           board.ySize - 1);
 
     pc.ReceiveShipPlaceResult(logic->PlaceShip(bs));
 }
 
-void bs::GameView::Shoot(PlayerController& pc, const Board& board)
+void bs::GameView::PlaceShipsAutomatically(const bs::Board& board)
 {
-    auto c = pc.GetShootPosition(board.xSize - 1, board.ySize - 1, board.GetShotHistory());
-    pc.ReceiveShotResult(logic->Shoot(c));
+    auto st = logic->GetState();
+    if (st != GameState::P1_PlaceShip && st != GameState::P2_PlaceShip) return;
+    while (logic->GetState() == st)
+    {
+        logic->PlaceShip(
+                rand.GetRandomBoardShip(board.GetAvailableShipsAmount(), GetDirs(), board.xSize - 1, board.ySize - 1));
+    }
+}
+
+void bs::GameView::Shoot(PlayerController& pc, const Board& board, PlayerController& other)
+{
+    auto c = pc.GetShootPosition(board);
+    auto res = logic->Shoot(c);
+    pc.ReceiveAllyShotResult(res);
+    other.ReceiveEnemyShotResult(c, res);
 }

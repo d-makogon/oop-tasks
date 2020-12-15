@@ -52,3 +52,8 @@ void bs::Ship::SetCoords(const std::vector<Coordinate>& coords)
 
     cells = coords;
 }
+
+const std::vector<bs::Coordinate>& bs::Ship::GetCoords() const
+{
+    return cells;
+}

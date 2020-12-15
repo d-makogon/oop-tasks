@@ -4,6 +4,38 @@
 #include <functional>
 #include <map>
 
+const bs::ConsoleView::CellStylesMap bs::ConsoleView::CellStyles = {
+        {CellChar::Hit,        {
+                                       Console::PrintStyle::ForegroundColor::Green,
+                                       Console::PrintStyle::BackgroundColor::Black,
+                                       Console::PrintStyle::TextStyle::Bold,
+                               }},
+        {CellChar::HitAndSunk, {
+                                       Console::PrintStyle::ForegroundColor::Green,
+                                       Console::PrintStyle::BackgroundColor::Black,
+                                       Console::PrintStyle::TextStyle::Bold,
+                               }},
+        {CellChar::Ship,       {
+                                       Console::PrintStyle::ForegroundColor::Cyan,
+                                       Console::PrintStyle::BackgroundColor::Black,
+                                       Console::PrintStyle::TextStyle::Bold,
+                               }},
+        {CellChar::Miss,       {
+                                       Console::PrintStyle::ForegroundColor::Red,
+                                       Console::PrintStyle::BackgroundColor::Black,
+                                       Console::PrintStyle::TextStyle::Bold
+                               }},
+        {CellChar::Empty,      Console::DefaultPrintStyle},
+};
+
+static Console::PrintStyle stagePrintStyle = {Console::PrintStyle::ForegroundColor::Cyan,
+                                              Console::PrintStyle::BackgroundColor::Default,
+                                              Console::PrintStyle::TextStyle::Bold};
+static Console::PrintStyle turnPrintStyle = {Console::PrintStyle::ForegroundColor::Green,
+                                             Console::PrintStyle::BackgroundColor::Default,
+                                             Console::PrintStyle::TextStyle::None};
+static Console::PrintStyle::ForegroundColor boardColor = Console::PrintStyle::ForegroundColor::Cyan;
+
 bs::ConsoleView::CellChar bs::ConsoleView::FromHistory(const bs::ShotHistory& shotHistory)
 {
     switch (shotHistory)
@@ -13,6 +45,9 @@ bs::ConsoleView::CellChar bs::ConsoleView::FromHistory(const bs::ShotHistory& sh
 
         case bs::ShotHistory::Hit:
             return CellChar::Hit;
+
+        case bs::ShotHistory::HitAndSunk:
+            return CellChar::HitAndSunk;
 
         default:
             return CellChar::Empty;
@@ -28,7 +63,7 @@ void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellCha
         {
             Console::Print("   ");
         }
-        Console::Print(Console::CoordToLetter(x), " ");
+        Console::Print(Console::IntToChar(x), " ");
     }
     Console::PrintLine();
 
@@ -42,31 +77,7 @@ void bs::ConsoleView::PrintBoard(int maxX, int maxY, const std::function<CellCha
         {
             // print cell
             CellChar cell = getCellFunc({x, y});
-            switch (cell)
-            {
-                // todo: map with all print parameters !
-                case CellChar::Ship:
-                    Console::PrintColored(static_cast<char>(cell),
-                                          Console::ForegroundColor::Cyan,
-                                          Console::BackgroundColor::Black,
-                                          Console::TextStyle::Bold);
-                    break;
-                case CellChar::Hit:
-                    Console::PrintColored(static_cast<char>(cell),
-                                          Console::ForegroundColor::Green,
-                                          Console::BackgroundColor::Black,
-                                          Console::TextStyle::Bold);
-                    break;
-                case CellChar::Miss:
-                    Console::PrintColored(static_cast<char>(cell),
-                                          Console::ForegroundColor::Red,
-                                          Console::BackgroundColor::Black,
-                                          Console::TextStyle::Bold);
-                    break;
-                case CellChar::Empty:
-                    Console::Print(" ");
-                    break;
-            }
+            Console::PrintColored(static_cast<char>(cell), CellStyles.at(cell));
             Console::Print("|");
         }
         Console::PrintLine();
@@ -92,31 +103,44 @@ void bs::ConsoleView::PrintAllyBoard(const bs::Board& board)
     });
 }
 
-void bs::ConsoleView::Do(bool revealPlayer1, bool revealPlayer2)
+void bs::ConsoleView::Do()
 {
     bool finished = false;
+    bool skippedPlacing = false;
+
     while (!finished)
     {
         Console::Clear();
         auto state = logic->GetState();
+        bool reveal = false;
         switch (state)
         {
             case GameState::P1_PlaceShip:
             case GameState::P2_PlaceShip:
             {
-                bool reveal = (state == GameState::P1_PlaceShip) ? revealPlayer1 : revealPlayer2;
+                reveal = (state == GameState::P1_PlaceShip) ? pc1->IsHuman() : pc2->IsHuman();
 
-                Console::PrintColored("STAGE 1: PLACING SHIPS\n", Console::ForegroundColor::Cyan,
-                                      Console::BackgroundColor::Black, Console::TextStyle::Bold);
-                Console::PrintColoredFormatted("Player %d turn\n", Console::ForegroundColor::Green,
-                                               Console::BackgroundColor::Black, Console::TextStyle::None,
+                Console::PrintColored("STAGE 1: PLACING SHIPS\n", stagePrintStyle);
+
+                Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
                                                (state == GameState::P1_PlaceShip) ? 1 : 2);
+
+                if (reveal)
+                {
+                    std::string msg = "Do you want to place ships automatically?";
+                    bool yes = (state == GameState::P1_PlaceShip) ? pc1->GetTrueOrFalse(msg) : pc2->GetTrueOrFalse(msg);
+                    if (yes)
+                    {
+                        PlaceShipsAutomatically(logic->GetAllyBoard());
+                        continue;
+                    }
+                }
 
                 const auto& curBoard = logic->GetAllyBoard();
 
                 if (reveal)
                 {
-                    Console::PrintColored("\nYour board:\n", Console::ForegroundColor::Cyan);
+                    Console::PrintColored("\nYour board:\n", boardColor);
                     PrintAllyBoard(curBoard);
                     Console::PrintLine();
                 }
@@ -132,27 +156,34 @@ void bs::ConsoleView::Do(bool revealPlayer1, bool revealPlayer2)
             case GameState::P1_Shoot:
             case GameState::P2_Shoot:
             {
-                bool reveal = (state == GameState::P1_Shoot) ? revealPlayer1 : revealPlayer2;
+                reveal = (state == GameState::P1_Shoot) ? pc1->IsHuman() : pc2->IsHuman();
 
-                Console::PrintColored("STAGE 2: SHOOTING\n", Console::ForegroundColor::Cyan,
-                                      Console::BackgroundColor::Black, Console::TextStyle::Bold);
-                Console::PrintColoredFormatted("Player %d turn\n", Console::ForegroundColor::Green,
-                                               Console::BackgroundColor::Black, Console::TextStyle::None,
+                Console::PrintColored("STAGE 2: SHOOTING\n", stagePrintStyle);
+                Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
                                                (state == GameState::P1_Shoot) ? 1 : 2);
 
                 const auto& enemyBoard = logic->GetEnemyBoard();
                 if (reveal)
                 {
-                    Console::PrintColored("\nYour board:\n\n", Console::ForegroundColor::Yellow);
+                    Console::PrintColored("\nYour board:\n\n", boardColor);
                     PrintAllyBoard(logic->GetAllyBoard());
-                    Console::PrintColored("\nYour opponent's board:\n\n", Console::ForegroundColor::Cyan);
+                    Console::PrintColored("\nYour opponent's board:\n\n", boardColor);
                     PrintEnemyBoard(enemyBoard);
                 }
-                Shoot((state == GameState::P1_Shoot) ? *pc1 : *pc2, enemyBoard);
+
+                Shoot((state == GameState::P1_Shoot) ? *pc1 : *pc2, enemyBoard,
+                      (state == GameState::P1_Shoot) ? *pc2 : *pc1);
 
                 if (reveal)
                 {
                     PrintEnemyBoard(enemyBoard);
+                }
+                else if ((state = logic->GetState()) != GameState::P1_Win && state != GameState::P2_Win)
+                {
+                    Console::PrintColored("\n\nYour board:\n\n", boardColor);
+                    PrintAllyBoard(enemyBoard);
+                    Console::PrintInfo("\nPress Enter to continue\n");
+                    Console::GetLine();
                 }
 
                 break;
@@ -160,16 +191,25 @@ void bs::ConsoleView::Do(bool revealPlayer1, bool revealPlayer2)
             case GameState::P1_Win:
             case GameState::P2_Win:
             {
-                Console::PrintFormatted("Player %d won the game!\n", (state == GameState::P1_Win) ? 1 : 2);
+                Console::PrintInfo("Player %d won the game!\n", (state == GameState::P1_Win) ? 1 : 2);
                 finished = true;
                 break;
             }
         }
-        if (!finished)
+        if (!finished && reveal)
             Console::PrintLine("Press Enter to go to the next step.");
-        else
+        else if (finished)
             Console::PrintLine("Press Enter to exit");
-        Console::GetLine();
+        if (reveal)
+        {
+            Console::GetLine();
+        }
+        else if (!skippedPlacing)
+        {
+            Console::PrintLine("Your opponent is placing ships. Press Enter to skip.\n");
+            Console::GetLine();
+            skippedPlacing = true;
+        }
     }
 }
 

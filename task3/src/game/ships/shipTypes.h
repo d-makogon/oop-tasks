@@ -18,9 +18,9 @@ namespace bs
     };
 
     const std::map<ShipType, int> ShipsMaxAmount = {
-            {ShipType::T1, 1},
-            {ShipType::T2, 1},
-            {ShipType::T3, 1},
+            {ShipType::T1, 4},
+            {ShipType::T2, 3},
+            {ShipType::T3, 2},
             {ShipType::T4, 1},
     };
 

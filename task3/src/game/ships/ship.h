@@ -30,5 +30,7 @@ namespace bs
         bool IsOnCoordinate(const Coordinate& coord) const;
 
         void SetCoords(const std::vector<Coordinate>& coords);
+
+        const std::vector<Coordinate>& GetCoords() const;
     };
 }

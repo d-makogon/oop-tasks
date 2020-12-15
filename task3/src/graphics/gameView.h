@@ -5,12 +5,15 @@
 #include "../game/board/board.h"
 #include "../game/gameLogic.h"
 #include "../playerControllers/playerController.h"
+#include "../utility/random.h"
 
 namespace bs
 {
     class GameView
     {
     protected:
+        Random rand;
+
         std::unique_ptr<GameLogic> logic;
 
         std::unique_ptr<PlayerController> pc1;
@@ -18,7 +21,9 @@ namespace bs
 
         void PlaceShip(PlayerController& pc, const Board& board);
 
-        void Shoot(PlayerController& pc, const Board& board);
+        void PlaceShipsAutomatically(const Board& board);
+
+        void Shoot(PlayerController& pc, const Board& board, PlayerController& other);
 
     public:
         explicit GameView(std::unique_ptr<GameLogic> logic, std::unique_ptr<PlayerController> pc1,
@@ -27,8 +32,8 @@ namespace bs
                   pc1(std::move(pc1)),
                   pc2(std::move(pc2)) {}
 
-        virtual void Do(bool revealPlayer1, bool revealPlayer2) = 0;
+        virtual void Do() = 0;
 
-        ~GameView() = default;
+        virtual ~GameView() = default;
     };
 }
