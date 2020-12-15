@@ -1,37 +1,18 @@
 #include "randomPlayerController.h"
 
-#include <random>
+#include "../utility/random.h"
 
-int bs::RandomPlayerController::GetRandomInRange(int min, int max)
+bs::BoardShip
+bs::RandomPlayerController::GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
+                                             const std::vector<ShipDirection>& availableDirs,
+                                             int maxXcoord,
+                                             int maxYcoord)
 {
-    std::uniform_int_distribution<> distrib(min, max);
-
-    return distrib(gen);
-}
-
-bs::BoardShip bs::RandomPlayerController::GetShipPlaceInfo(const std::vector<ShipType>& availableTypes,
-                                                           const std::vector<ShipDirection>& availableDirs,
-                                                           int maxXcoord,
-                                                           int maxYcoord)
-{
-    return bs::BoardShip({GetRandomInRange(0, maxXcoord), GetRandomInRange(0, maxYcoord)},
-                         GetRandomInArray<ShipDirection>(availableDirs),
-                         GetRandomInArray<ShipType>(availableTypes));
-}
-
-void bs::RandomPlayerController::ReceiveShipPlaceResult(const bs::ShipPlacementResult& result)
-{
-
+    return random.GetRandomBoardShip(availableTypes, availableDirs, maxXcoord, maxYcoord);
 }
 
 bs::Coordinate
-bs::RandomPlayerController::GetShootPosition(int maxX, int maxY, const std::map<Coordinate, ShotHistory>& shotHistory)
+bs::RandomPlayerController::GetShootPosition(const bs::Board& enemyBoard)
 {
-    return {GetRandomInRange(0, maxX), GetRandomInRange(0, maxY)};
+    return random.GetRandomCoordinate(enemyBoard.xSize - 1, enemyBoard.ySize - 1);
 }
-
-void bs::RandomPlayerController::ReceiveShotResult(const bs::ShotResult& shotResult)
-{
-
-}
-

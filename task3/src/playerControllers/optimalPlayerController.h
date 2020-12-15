@@ -5,13 +5,13 @@
 
 namespace bs
 {
-    class RandomPlayerController : public PlayerController
+    class OptimalPlayerController : public PlayerController
     {
     private:
         Random random;
 
     public:
-        RandomPlayerController() : random() {}
+        OptimalPlayerController() : random() {}
 
         BoardShip GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
                                    const std::vector<ShipDirection>& availableDirs,
@@ -22,12 +22,14 @@ namespace bs
 
         Coordinate GetShootPosition(const bs::Board& enemyBoard) override;
 
-        bool IsHuman() const override { return false; }
-
         void ReceiveAllyShotResult(const ShotResult& shotResult) override {}
+
+        void ReceiveEnemyShotResult(const bs::Coordinate& coord, const ShotResult& shotResult) override {}
 
         bool GetTrueOrFalse(const std::string& msg) override { return true; }
 
-        void ReceiveEnemyShotResult(const bs::Coordinate& coord, const ShotResult& shotResult) override {}
+        bool IsHuman() const override { return false; }
+
+        ~OptimalPlayerController() override = default;
     };
 }
