@@ -52,9 +52,16 @@ bs::ShotResult bs::Board::CheckShipsForHit(const bs::Coordinate& coord)
 
         hitStatus = ship.Fire(coord);
 
-        if (hitStatus == ShotResult::Hit || hitStatus == ShotResult::HitAndSunk)
+        if (hitStatus == ShotResult::Hit)
         {
             shotHistory[coord] = ShotHistory::Hit;
+        }
+        else if (hitStatus == ShotResult::HitAndSunk)
+        {
+            for (const auto& shipCoord : ship.GetCoords())
+            {
+                shotHistory[shipCoord] = ShotHistory::HitAndSunk;
+            }
         }
 
         if (hitStatus != ShotResult::Miss)
@@ -161,8 +168,10 @@ std::vector<bs::Coordinate> bs::Board::GetShipCoords(const bs::BoardShip& ship, 
     return coords;
 }
 
-bool bs::Board::AreSurroundingCellsEmpty(const Coordinate& coord)
+std::vector<bs::Coordinate> bs::Board::GetSurroundingCells(const bs::Coordinate& coord) const
 {
+    if (!IsValidCoordinate(coord)) throw std::invalid_argument("Coordinate out of board");
+
     int x = coord.GetX();
     int y = coord.GetY();
 
@@ -174,8 +183,23 @@ bool bs::Board::AreSurroundingCellsEmpty(const Coordinate& coord)
     };
     // @formatter:on
 
+    for (auto it = surCells.begin(); it != surCells.end();)
+    {
+        if (!IsValidCoordinate(*it))
+            surCells.erase(it);
+        else
+            it++;
+    }
+
+    return surCells;
+}
+
+bool bs::Board::AreSurroundingCellsEmpty(const Coordinate& coord) const
+{
+    auto surCells = GetSurroundingCells(coord);
+
     // return true if none of surrounding cells has a ship on it
-    return !std::any_of(surCells.begin(), surCells.end(), [this](const Coordinate& c) { return CheckForShip(c); });
+    return std::none_of(surCells.begin(), surCells.end(), [this](const Coordinate& c) { return CheckForShip(c); });
 }
 
 bs::ShotHistory bs::Board::GetHistoryAt(const Coordinate& coord) const
@@ -194,12 +218,12 @@ bool bs::Board::CanPlaceShips() const
     return ships.size() < maxShips;
 }
 
-std::map<bs::ShipType, int> bs::Board::GetAvailableShipsAmount() const
+std::vector<std::pair<bs::ShipType, int>> bs::Board::GetAvailableShipsAmount() const
 {
-    auto result = shipsCount;
-    for (auto&[type, count] : result)
+    std::vector<std::pair<bs::ShipType, int>> result;
+    for (auto&[type, count] : shipsCount)
     {
-        result[type] = ShipsMaxAmount.at(type) - count;
+        result.emplace_back(type, ShipsMaxAmount.at(type) - count);
     }
     return result;
 }
@@ -207,11 +231,6 @@ std::map<bs::ShipType, int> bs::Board::GetAvailableShipsAmount() const
 bool bs::Board::CanPlaceShipOfType(const bs::ShipType& type) const
 {
     return shipsCount.at(type) < ShipsMaxAmount.at(type);
-}
-
-int bs::Board::GetMaxShipsCount() const
-{
-    return maxShips;
 }
 
 const std::map<bs::Coordinate, bs::ShotHistory>& bs::Board::GetShotHistory() const

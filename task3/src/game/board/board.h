@@ -10,7 +10,7 @@ namespace bs
 {
     enum class ShotHistory
     {
-        Hit, Miss, Unknown
+        Hit, HitAndSunk, Miss, Unknown
     };
 
     enum class ShipPlacementResult
@@ -26,8 +26,6 @@ namespace bs
         std::map<Coordinate, ShotHistory> shotHistory;
         int maxShips = 0;
 
-        // Return false if coord is out of board boundaries
-        bool IsValidCoordinate(const Coordinate& coord) const;
 
         // Tries to shoot a ship (if it exists) at given coord
         ShotResult CheckShipsForHit(const Coordinate& coord);
@@ -35,8 +33,6 @@ namespace bs
         // Returns vector of ship coordinates
         static std::vector<Coordinate> GetShipCoords(const BoardShip& ship, int shipSize);
 
-        // Returns true if all surrounding cells are empty
-        bool AreSurroundingCellsEmpty(const Coordinate& coord);
 
     public:
         const int xSize = 10;
@@ -58,10 +54,16 @@ namespace bs
 
         bool CanPlaceShipOfType(const ShipType& type) const;
 
-        int GetMaxShipsCount() const;
+        // Returns true if all surrounding cells are empty
+        bool AreSurroundingCellsEmpty(const Coordinate& coord) const;
+
+        // Returns false if coord is out of board boundaries
+        bool IsValidCoordinate(const Coordinate& coord) const;
+
+        std::vector<Coordinate> GetSurroundingCells(const Coordinate& coord) const;
 
         const std::map<Coordinate, ShotHistory>& GetShotHistory() const;
 
-        std::map<ShipType, int> GetAvailableShipsAmount() const;
+        std::vector<std::pair<bs::ShipType, int>> GetAvailableShipsAmount() const;
     };
 }
