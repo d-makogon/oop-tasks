@@ -75,7 +75,7 @@ TritSet::TritSet(size_t tritsCount)
 {
     size_t cellSize = sizeof(cell_t);
     size_t cellsToAlloc = cellsForTrits(tritsCount, cellSize);
-    auto tmp = (unsigned int*)malloc(cellsToAlloc * cellSize);
+    auto tmp = (cell_t*)malloc(cellsToAlloc * cellSize);
     if (tmp == nullptr)
     {
         throw bad_alloc();
