@@ -477,6 +477,11 @@ bool TritSet::TritProxy::operator==(Trit trit)
     return (Trit)(*this) == trit;
 }
 
+bool TritSet::TritProxy::operator!=(Trit trit)
+{
+    return !(*this == trit);
+}
+
 TritSet::TritProxy& TritSet::TritProxy::operator=(const Trit& val)
 {
 
