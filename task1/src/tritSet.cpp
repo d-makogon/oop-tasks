@@ -472,12 +472,12 @@ const
     return static_cast<const TritSet&>(_tritSet)[_index];
 }
 
-bool TritSet::TritProxy::operator==(Trit trit)
+bool TritSet::TritProxy::operator==(Trit trit) const
 {
     return (Trit)(*this) == trit;
 }
 
-bool TritSet::TritProxy::operator!=(Trit trit)
+bool TritSet::TritProxy::operator!=(Trit trit) const
 {
     return !(*this == trit);
 }
