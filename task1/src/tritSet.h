@@ -59,7 +59,9 @@ public:
 
         friend ostream& operator<<(ostream& os, const TritProxy& tritProxy);
 
-        bool operator==(Trit trit);
+        bool operator==(Trit trit) const;
+        
+        bool operator!=(Trit trit) const;
     };
 
     TritSet();
