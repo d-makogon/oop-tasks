@@ -58,13 +58,13 @@ enum optionIndex
 };
 
 const option::Descriptor usage[] = {
-        {UNKNOWN, 0, "",  "",       Arg::Unknown,  "USAGE: path/to/executable options\n\n"
+        {UNKNOWN, 0, "",  "",       Arg::Unknown,  "USAGE: path/to/executable [options]\n\n"
                                                    "Options:"},
         {HELP,    0, "h", "help",   Arg::None,     "  \t--help  \tPrint usage and exit."},
-        {COUNT,   0, "c", "count",  Arg::Numeric,  "  -c <num>, \t--count=<num>  \tNumber of games to play."},
-        {PLAYER1, 0, "f", "first",  Arg::Required, "  -f <arg>, \t--first=<arg>"
+        {COUNT,   0, "c", "count",  Arg::Numeric,  "  -c <num>, \t--count <num>  \tNumber of rounds to play. Default: 1"},
+        {PLAYER1, 0, "f", "first",  Arg::NonEmpty, "  -f <arg>, \t--first <arg>"
                                                    "  \tType of 1st player (console, random, optimal). Default: random."},
-        {PLAYER2, 0, "s", "second", Arg::Required, "  -s <arg>, \t--second=<arg>"
+        {PLAYER2, 0, "s", "second", Arg::NonEmpty, "  -s <arg>, \t--second <arg>"
                                                    "  \tType of 2nd player (console, random, optimal). Default: random."},
         {0,       0, 0,   0,        0,             0}};
 
@@ -81,11 +81,19 @@ int main(int argc, char** argv)
         return 1;
 
     int roundsCount;
-    if (options[HELP] || argc == 0 || (!options[COUNT].arg) || !str2num(options[COUNT].arg, roundsCount) ||
-        !(options[PLAYER1].arg) || !(options[PLAYER2].arg))
+    if (options[HELP])
     {
         option::printUsage(std::cout, usage);
         return 0;
+    }
+    if (!options[COUNT].arg)
+    {
+        roundsCount = 1;
+    }
+    else if (!str2num(options[COUNT].arg, roundsCount))
+    {
+        option::printUsage(std::cout, usage);
+        return 1;
     }
 
     Factory<bs::PlayerController> controllersFactory;
@@ -95,14 +103,14 @@ int main(int argc, char** argv)
 
     auto logic = std::make_unique<bs::GameLogic>(roundsCount);
 
-    auto p1 = controllersFactory.Create(options[PLAYER1].arg);
+    auto p1 = controllersFactory.Create((options[PLAYER1].arg) ? (options[PLAYER1].arg) : "random");
     if (p1 == nullptr)
     {
         std::cout << "Unknown player type: " << options[PLAYER1].arg << std::endl;
         option::printUsage(std::cout, usage);
         return 1;
     }
-    auto p2 = controllersFactory.Create(options[PLAYER2].arg);
+    auto p2 = controllersFactory.Create((options[PLAYER2].arg) ? (options[PLAYER2].arg) : "random");
     if (p2 == nullptr)
     {
         std::cout << "Unknown player type: " << options[PLAYER2].arg << std::endl;
