@@ -2,10 +2,10 @@
 
 #include <utility>
 
-#include "../game/board/board.h"
-#include "../game/gameLogic.h"
-#include "../playerControllers/playerController.h"
-#include "../utility/random.h"
+#include <board.h>
+#include <gameLogic.h>
+#include <playerController.h>
+#include <random.h>
 
 namespace bs
 {
@@ -25,13 +25,13 @@ namespace bs
 
         void Shoot(PlayerController& pc, const Board& board, PlayerController& other);
 
-    public:
-        explicit GameView(std::unique_ptr<GameLogic> logic, std::unique_ptr<PlayerController> pc1,
-                          std::unique_ptr<PlayerController> pc2)
+        GameView(std::unique_ptr<GameLogic> logic, std::unique_ptr<PlayerController> pc1,
+                 std::unique_ptr<PlayerController> pc2)
                 : logic(std::move(logic)),
                   pc1(std::move(pc1)),
                   pc2(std::move(pc2)) {}
 
+    public:
         virtual void Do() = 0;
 
         virtual ~GameView() = default;

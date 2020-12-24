@@ -1,40 +1,15 @@
-#include "consoleView.h"
+#include "include/consoleView.h"
 
-#include <iostream>
 #include <functional>
 #include <map>
 
-const bs::ConsoleView::CellStylesMap bs::ConsoleView::CellStyles = {
-        {CellChar::Hit,        {
-                                       Console::PrintStyle::ForegroundColor::Green,
-                                       Console::PrintStyle::BackgroundColor::Black,
-                                       Console::PrintStyle::TextStyle::Bold,
-                               }},
-        {CellChar::HitAndSunk, {
-                                       Console::PrintStyle::ForegroundColor::Green,
-                                       Console::PrintStyle::BackgroundColor::Black,
-                                       Console::PrintStyle::TextStyle::Bold,
-                               }},
-        {CellChar::Ship,       {
-                                       Console::PrintStyle::ForegroundColor::Cyan,
-                                       Console::PrintStyle::BackgroundColor::Black,
-                                       Console::PrintStyle::TextStyle::Bold,
-                               }},
-        {CellChar::Miss,       {
-                                       Console::PrintStyle::ForegroundColor::Red,
-                                       Console::PrintStyle::BackgroundColor::Black,
-                                       Console::PrintStyle::TextStyle::Bold
-                               }},
-        {CellChar::Empty,      Console::DefaultPrintStyle},
-};
-
-static Console::PrintStyle stagePrintStyle = {Console::PrintStyle::ForegroundColor::Cyan,
-                                              Console::PrintStyle::BackgroundColor::Default,
-                                              Console::PrintStyle::TextStyle::Bold};
-static Console::PrintStyle turnPrintStyle = {Console::PrintStyle::ForegroundColor::Green,
-                                             Console::PrintStyle::BackgroundColor::Default,
-                                             Console::PrintStyle::TextStyle::None};
-static Console::PrintStyle::ForegroundColor boardColor = Console::PrintStyle::ForegroundColor::Cyan;
+Console::PrintStyle stagePrintStyle = {Console::PrintStyle::ForegroundColor::Cyan,
+                                       Console::PrintStyle::BackgroundColor::Default,
+                                       Console::PrintStyle::TextStyle::Bold};
+Console::PrintStyle turnPrintStyle = {Console::PrintStyle::ForegroundColor::Green,
+                                      Console::PrintStyle::BackgroundColor::Default,
+                                      Console::PrintStyle::TextStyle::None};
+Console::PrintStyle::ForegroundColor boardColor = Console::PrintStyle::ForegroundColor::Cyan;
 
 bs::ConsoleView::CellChar bs::ConsoleView::FromHistory(const bs::ShotHistory& shotHistory)
 {
@@ -103,113 +78,173 @@ void bs::ConsoleView::PrintAllyBoard(const bs::Board& board)
     });
 }
 
+void bs::ConsoleView::Update()
+{
+    auto state = logic->GetState();
+    switch (state)
+    {
+        case GameState::RoundStart:
+            UpdateRoundStartScreen(true);
+            logic->StartRound();
+            p1SkippedPlacing = false;
+            p2SkippedPlacing = false;
+            p1AskedAutoPlace = false;
+            p2AskedAutoPlace = false;
+            break;
+        case GameState::P1_PlaceShip:
+            UpdateShipPlaceScreen(pc1->IsHuman());
+            if (!p2SkippedPlacing && !pc1->IsHuman() && pc2->IsHuman())
+            {
+                Console::PrintLine("Player 1 is placing ships.\nPress Enter to skip.");
+                Console::GetLine();
+                p2SkippedPlacing = true;
+            }
+            break;
+        case GameState::P2_PlaceShip:
+            UpdateShipPlaceScreen(pc2->IsHuman());
+            if (!p1SkippedPlacing && !pc2->IsHuman() && pc1->IsHuman())
+            {
+                Console::PrintLine("Player 2 is placing ships.\nPress Enter to skip.");
+                Console::GetLine();
+                p1SkippedPlacing = true;
+            }
+            break;
+        case GameState::P1_Shoot:
+            UpdateShootScreen(pc1->IsHuman());
+            break;
+        case GameState::P2_Shoot:
+            UpdateShootScreen(pc2->IsHuman());
+            break;
+        case GameState::P1_WinRound:
+        case GameState::P2_WinRound:
+            UpdateRoundWinScreen(true);
+            logic->StartRound();
+            break;
+        case GameState::P1_WinGame:
+        case GameState::P2_WinGame:
+            UpdateGameWinScreen(true);
+            break;
+    }
+}
+
+void bs::ConsoleView::UpdateRoundStartScreen(bool verbose)
+{
+    if (verbose)
+    {
+        Console::PrintInfo("Round %d/%d. Current score: Player 1 - %d\tPlayer 2 - %d\n",
+                           logic->GetPlayedGamesCount(), logic->GetGamesCount(), logic->GetP1Score(),
+                           logic->GetP2Score());
+        Console::PrintLine("Press Enter to continue.");
+        Console::GetLine();
+    }
+}
+
+void bs::ConsoleView::UpdateShipPlaceScreen(bool verbose)
+{
+    auto state = logic->GetState();
+    Console::PrintColored("STAGE 1: PLACING SHIPS\n", stagePrintStyle);
+
+    Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
+                                   (state == GameState::P1_PlaceShip) ? 1 : 2);
+
+    bool askedAutoPlace = (state == GameState::P1_PlaceShip) ? p1AskedAutoPlace : p2AskedAutoPlace;
+
+    if (verbose && !askedAutoPlace)
+    {
+        std::string msg = "Do you want to place ships automatically?";
+        bool yes = (state == GameState::P1_PlaceShip) ? pc1->GetYesOrNo(msg) : pc2->GetYesOrNo(msg);
+        if (yes)
+        {
+            PlaceShipsAutomatically(logic->GetAllyBoard());
+            return;
+        }
+        if (state == GameState::P1_PlaceShip)
+            p1AskedAutoPlace = true;
+        else
+            p2AskedAutoPlace = true;
+    }
+
+    const auto& curBoard = logic->GetAllyBoard();
+
+    if (verbose)
+    {
+        Console::PrintColored("\nYour board:\n", boardColor);
+        PrintAllyBoard(curBoard);
+        Console::PrintLine();
+    }
+
+    PlaceShip((state == GameState::P1_PlaceShip) ? *pc1 : *pc2, curBoard);
+
+    if (verbose)
+    {
+        PrintAllyBoard(curBoard);
+        Console::PrintLine("\nPress Enter to continue.");
+        Console::GetLine();
+    }
+}
+
+void bs::ConsoleView::UpdateShootScreen(bool verbose)
+{
+    auto state = logic->GetState();
+    Console::PrintColored("STAGE 2: SHOOTING\n", stagePrintStyle);
+    Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
+                                   (state == GameState::P1_Shoot) ? 1 : 2);
+
+    const auto& enemyBoard = logic->GetEnemyBoard();
+    if (verbose)
+    {
+        Console::PrintColored("\nYour board:\n\n", boardColor);
+        PrintAllyBoard(logic->GetAllyBoard());
+        Console::PrintColored("\nYour opponent's board:\n\n", boardColor);
+        PrintEnemyBoard(enemyBoard);
+    }
+
+    Shoot((state == GameState::P1_Shoot) ? *pc1 : *pc2, enemyBoard,
+          (state == GameState::P1_Shoot) ? *pc2 : *pc1);
+
+    if (verbose)
+    {
+        PrintEnemyBoard(enemyBoard);
+    }
+    else if ((state = logic->GetState()) != GameState::P1_WinRound && state != GameState::P2_WinRound &&
+             state != GameState::P1_WinGame && state != GameState::P2_WinGame)
+    {
+        Console::PrintColored("\n\nYour board:\n\n", boardColor);
+        PrintAllyBoard(enemyBoard);
+    }
+    Console::PrintInfo("\nPress Enter to continue\n");
+    Console::GetLine();
+}
+
+void bs::ConsoleView::UpdateRoundWinScreen(bool verbose)
+{
+    auto state = logic->GetState();
+    Console::PrintInfo("Player %d won current round!\nScore: Player 1 - %d\tPlayer 2 - %d\n",
+                       (state == GameState::P1_WinRound) ? 1 : 2, logic->GetP1Score(), logic->GetP2Score());
+    Console::PrintInfo("\nPress Enter to continue\n");
+    Console::GetLine();
+}
+
+void bs::ConsoleView::UpdateGameWinScreen(bool verbose)
+{
+    Console::PrintInfo("Player %d won the game!\nScore: Player 1 - %d\tPlayer 2 - %d\n",
+                       (logic->GetState() == GameState::P1_WinGame) ? 1 : 2, logic->GetP1Score(), logic->GetP2Score());
+    Console::PrintInfo("\nPress Enter to continue\n");
+    Console::GetLine();
+}
+
 void bs::ConsoleView::Do()
 {
     bool finished = false;
-    bool skippedPlacing = false;
 
     while (!finished)
     {
         Console::Clear();
+
         auto state = logic->GetState();
-        bool reveal = false;
-        switch (state)
-        {
-            case GameState::P1_PlaceShip:
-            case GameState::P2_PlaceShip:
-            {
-                reveal = (state == GameState::P1_PlaceShip) ? pc1->IsHuman() : pc2->IsHuman();
 
-                Console::PrintColored("STAGE 1: PLACING SHIPS\n", stagePrintStyle);
+        Update();
 
-                Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
-                                               (state == GameState::P1_PlaceShip) ? 1 : 2);
-
-                if (reveal)
-                {
-                    std::string msg = "Do you want to place ships automatically?";
-                    bool yes = (state == GameState::P1_PlaceShip) ? pc1->GetTrueOrFalse(msg) : pc2->GetTrueOrFalse(msg);
-                    if (yes)
-                    {
-                        PlaceShipsAutomatically(logic->GetAllyBoard());
-                        continue;
-                    }
-                }
-
-                const auto& curBoard = logic->GetAllyBoard();
-
-                if (reveal)
-                {
-                    Console::PrintColored("\nYour board:\n", boardColor);
-                    PrintAllyBoard(curBoard);
-                    Console::PrintLine();
-                }
-
-                PlaceShip((state == GameState::P1_PlaceShip) ? *pc1 : *pc2, curBoard);
-
-                if (reveal)
-                {
-                    PrintAllyBoard(curBoard);
-                }
-                break;
-            }
-            case GameState::P1_Shoot:
-            case GameState::P2_Shoot:
-            {
-                reveal = (state == GameState::P1_Shoot) ? pc1->IsHuman() : pc2->IsHuman();
-
-                Console::PrintColored("STAGE 2: SHOOTING\n", stagePrintStyle);
-                Console::PrintColoredFormatted("Player %d turn\n", turnPrintStyle,
-                                               (state == GameState::P1_Shoot) ? 1 : 2);
-
-                const auto& enemyBoard = logic->GetEnemyBoard();
-                if (reveal)
-                {
-                    Console::PrintColored("\nYour board:\n\n", boardColor);
-                    PrintAllyBoard(logic->GetAllyBoard());
-                    Console::PrintColored("\nYour opponent's board:\n\n", boardColor);
-                    PrintEnemyBoard(enemyBoard);
-                }
-
-                Shoot((state == GameState::P1_Shoot) ? *pc1 : *pc2, enemyBoard,
-                      (state == GameState::P1_Shoot) ? *pc2 : *pc1);
-
-                if (reveal)
-                {
-                    PrintEnemyBoard(enemyBoard);
-                }
-                else if ((state = logic->GetState()) != GameState::P1_Win && state != GameState::P2_Win)
-                {
-                    Console::PrintColored("\n\nYour board:\n\n", boardColor);
-                    PrintAllyBoard(enemyBoard);
-                    Console::PrintInfo("\nPress Enter to continue\n");
-                    Console::GetLine();
-                }
-
-                break;
-            }
-            case GameState::P1_Win:
-            case GameState::P2_Win:
-            {
-                Console::PrintInfo("Player %d won the game!\n", (state == GameState::P1_Win) ? 1 : 2);
-                finished = true;
-                break;
-            }
-        }
-        if (!finished && reveal)
-            Console::PrintLine("Press Enter to go to the next step.");
-        else if (finished)
-            Console::PrintLine("Press Enter to exit");
-        if (reveal)
-        {
-            Console::GetLine();
-        }
-        else if (!skippedPlacing)
-        {
-            Console::PrintLine("Your opponent is placing ships. Press Enter to skip.\n");
-            Console::GetLine();
-            skippedPlacing = true;
-        }
+        finished = (state == GameState::P1_WinGame || state == GameState::P2_WinGame);
     }
 }
-

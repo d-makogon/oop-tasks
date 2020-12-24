@@ -1,14 +1,16 @@
-#include "randomPlayerController.h"
+#include "include/randomPlayerController.h"
 
-#include "../utility/random.h"
+#include <random.h>
 
 bs::BoardShip
-bs::RandomPlayerController::GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
-                                             const std::vector<ShipDirection>& availableDirs,
-                                             int maxXcoord,
-                                             int maxYcoord)
+bs::RandomPlayerController::GetShipPlaceInfo(const bs::Board& board)
 {
-    return random.GetRandomBoardShip(availableTypes, availableDirs, maxXcoord, maxYcoord);
+    static std::vector<bs::ShipDirection> dirOptions;
+    if (dirOptions.empty())
+        for (auto&[dir, name] : ShipDirsNames)
+            dirOptions.push_back(dir);
+
+    return random.GetRandomBoardShip(board.GetAvailableShipsAmount(), dirOptions, board.xSize - 1, board.ySize - 1);
 }
 
 bs::Coordinate

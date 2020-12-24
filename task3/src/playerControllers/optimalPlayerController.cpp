@@ -1,5 +1,4 @@
-#include <iostream>
-#include "optimalPlayerController.h"
+#include "include/optimalPlayerController.h"
 
 std::vector<bs::Coordinate>
 GetNeighbourCellsToShoot(const bs::Coordinate& coord, const bs::Board& board)
@@ -71,12 +70,15 @@ bs::OptimalPlayerController::GetShootPosition(const bs::Board& enemyBoard)
 }
 
 bs::BoardShip
-bs::OptimalPlayerController::GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
-                                              const std::vector<ShipDirection>& availableDirs, int maxXcoord,
-                                              int maxYcoord)
+bs::OptimalPlayerController::GetShipPlaceInfo(const bs::Board& board)
 {
-    return bs::BoardShip({random.GetRandomInRange(0, maxXcoord),
-                          random.GetRandomInRange(0, maxYcoord)},
-                         random.GetRandomInArray<ShipDirection>(availableDirs),
-                         random.GetRandomInArray<std::pair<ShipType, int>>(availableTypes).first);
+    static std::vector<bs::ShipDirection> dirOptions;
+    if (dirOptions.empty())
+        for (auto&[dir, name] : ShipDirsNames)
+            dirOptions.push_back(dir);
+
+    return bs::BoardShip({random.GetRandomInRange(0, board.xSize - 1),
+                          random.GetRandomInRange(0, board.ySize - 1)},
+                         random.GetRandomInArray<ShipDirection>(dirOptions),
+                         random.GetRandomInArray<std::pair<ShipType, int>>(board.GetAvailableShipsAmount()).first);
 }

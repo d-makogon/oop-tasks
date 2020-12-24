@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ship.h"
-#include "shipTypes.h"
+#include <ship.h>
+#include <shipTypes.h>
 
 namespace bs
 {

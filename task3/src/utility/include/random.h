@@ -1,8 +1,9 @@
 #pragma once
 
 #include <random>
-#include "../game/ships/coordinate.h"
-#include "../game/gameLogic.h"
+#include <coordinate.h>
+#include <shipTypes.h>
+#include <boardShip.h>
 
 class Random
 {

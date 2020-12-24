@@ -1,4 +1,4 @@
-#include "random.h"
+#include "include/random.h"
 
 bs::Coordinate Random::GetRandomCoordinate(int maxX, int maxY)
 {

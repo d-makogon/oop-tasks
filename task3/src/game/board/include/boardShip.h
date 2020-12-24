@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "../ships/ship.h"
+#include <ship.h>
 
 namespace bs
 {

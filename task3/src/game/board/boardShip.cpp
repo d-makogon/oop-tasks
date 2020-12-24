@@ -1,4 +1,4 @@
-#include "boardShip.h"
+#include "include/boardShip.h"
 
 bs::Coordinate bs::BoardShip::GetCoordinate() const
 {

@@ -1,12 +1,10 @@
 #include <algorithm>
-#include "ship.h"
+#include "include/ship.h"
 
-bs::Ship::Ship(const ShipType& shipType, int shipSize)
+bs::Ship::Ship(const ShipType& shipType, int shipSize) : shipType(shipType), shipSize(shipSize),
+                                                         cellsRemaining(shipSize)
 {
-    this->shipType = shipType;
-    this->cells.reserve(shipSize);
-    this->shipSize = shipSize;
-    this->cellsRemaining = shipSize;
+    cells.reserve(shipSize);
 }
 
 bool bs::Ship::IsSunk() const

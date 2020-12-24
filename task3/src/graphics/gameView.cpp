@@ -1,24 +1,23 @@
-#include "gameView.h"
-#include "../utility/random.h"
+#include "include/gameView.h"
+#include <random.h>
 
-std::vector<bs::ShipDirection> GetDirs()
+std::vector<bs::ShipDirection> GetDirsVector()
 {
-    static std::vector<bs::ShipDirection> availableDirs;
-    if (availableDirs.empty())
+    static std::vector<bs::ShipDirection> dirs;
+    if (dirs.empty())
     {
-        availableDirs.reserve(bs::ShipDirsNames.size());
+        dirs.reserve(bs::ShipDirsNames.size());
         for (auto&[dir, name] : bs::ShipDirsNames)
         {
-            availableDirs.push_back(dir);
+            dirs.push_back(dir);
         }
     }
-    return availableDirs;
+    return dirs;
 }
 
 void bs::GameView::PlaceShip(PlayerController& pc, const Board& board)
 {
-    bs::BoardShip bs = pc.GetShipPlaceInfo(board.GetAvailableShipsAmount(), GetDirs(), board.xSize - 1,
-                                           board.ySize - 1);
+    bs::BoardShip bs = pc.GetShipPlaceInfo(board);
 
     pc.ReceiveShipPlaceResult(logic->PlaceShip(bs));
 }
@@ -30,7 +29,8 @@ void bs::GameView::PlaceShipsAutomatically(const bs::Board& board)
     while (logic->GetState() == st)
     {
         logic->PlaceShip(
-                rand.GetRandomBoardShip(board.GetAvailableShipsAmount(), GetDirs(), board.xSize - 1, board.ySize - 1));
+                rand.GetRandomBoardShip(board.GetAvailableShipsAmount(), GetDirsVector(), board.xSize - 1,
+                                        board.ySize - 1));
     }
 }
 

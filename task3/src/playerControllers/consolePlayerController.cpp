@@ -1,40 +1,13 @@
-#include "consolePlayerController.h"
+#include "include/consolePlayerController.h"
 
-#include "../graphics/console/consoleController.h"
-
-// signed types
-template<typename T>
-bool str2T(const std::string& str, T& ret)
-{
-    using TBigger = long long;
-    const char* s = str.c_str();
-    char* end;
-    long long conv;
-    errno = 0;
-    conv = strtoll(s, &end, 10);
-    if ((errno == ERANGE && conv == std::numeric_limits<TBigger>::max()) ||
-        conv > std::numeric_limits<T>::max())
-    {
-        return false;
-    }
-    if ((errno == ERANGE && conv == std::numeric_limits<TBigger>::min()) ||
-        conv < std::numeric_limits<T>::min())
-    {
-        return false;
-    }
-    if (*s == '\0' || *end != '\0')
-    {
-        return false;
-    }
-    ret = conv;
-    return true;
-}
+#include <console.h>
+#include <utils.h>
 
 bool TryGetIntOption(int rangeStart, int rangeEnd, int& choice)
 {
     if (rangeStart > rangeEnd)
     {
-        throw std::invalid_argument("Range start was > range end.");
+        throw std::invalid_argument("Range start was greater than range end.");
     }
     if (rangeStart < rangeEnd)
     {
@@ -70,7 +43,7 @@ bool TryGetCoordinate(int maxX, int maxY, bs::Coordinate& coordinate)
 
     int x = Console::CharToInt(s[0]);
     int y;
-    if (!str2T(s.substr(1), y)) return false;
+    if (!str2num(s.substr(1), y)) return false;
     if (x < 0 || x > maxX || y < 0 || y > maxY) return false;
     coordinate = {x, y};
     return true;
@@ -90,7 +63,6 @@ bs::ShipType ChooseShipType(const std::vector<std::pair<bs::ShipType, int>>& ava
     }
 
     int option;
-    // todo: make sth like exit cmd
     while (!TryGetIntOption(1, curOption - 1, option))
     {
         Console::PrintError("Wrong option. Try again.\n");
@@ -101,14 +73,19 @@ bs::ShipType ChooseShipType(const std::vector<std::pair<bs::ShipType, int>>& ava
     return availableTypes[option - 1].first;
 }
 
-bs::ShipDirection ChooseShipDir(const std::vector<bs::ShipDirection>& availableDirs)
+bs::ShipDirection ChooseShipDir()
 {
     Console::PrintLine("Choose direction: ");
 
+    static std::vector<bs::ShipDirection> dirOptions;
+    if (dirOptions.empty())
+        for (auto& [dir, name] : bs::ShipDirsNames)
+            dirOptions.push_back(dir);
+
     int curOption = 1;
-    for (auto& dir : availableDirs)
+    for (const auto& dir : dirOptions)
     {
-        Console::PrintFormatted("%d - %s\n", curOption, bs::ShipDirsNames.at(dir));
+        Console::PrintFormatted("%d - %s\n", curOption, bs::ShipDirsNames.at(dirOptions[curOption - 1]));
         curOption++;
     }
 
@@ -118,9 +95,9 @@ bs::ShipDirection ChooseShipDir(const std::vector<bs::ShipDirection>& availableD
         Console::PrintError("Wrong option. Try again.\n");
     }
 
-    Console::PrintOK("You chose %s direction.\n", bs::ShipDirsNames.at(availableDirs[option - 1]));
+    Console::PrintOK("You chose %s direction.\n", bs::ShipDirsNames.at(dirOptions[option - 1]));
 
-    return availableDirs[option - 1];
+    return dirOptions[option - 1];
 }
 
 bs::Coordinate ChooseShipCoord(int maxX, int maxY)
@@ -139,14 +116,11 @@ bs::Coordinate ChooseShipCoord(int maxX, int maxY)
 }
 
 bs::BoardShip
-bs::ConsolePlayerController::GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
-                                              const std::vector<ShipDirection>& availableDirs,
-                                              int maxXcoord,
-                                              int maxYcoord)
+bs::ConsolePlayerController::GetShipPlaceInfo(const bs::Board& board)
 {
-    auto type = ChooseShipType(availableTypes);
-    auto shipDir = ChooseShipDir(availableDirs);
-    auto coord = ChooseShipCoord(maxXcoord, maxYcoord);
+    auto type = ChooseShipType(board.GetAvailableShipsAmount());
+    auto shipDir = ChooseShipDir();
+    auto coord = ChooseShipCoord(board.xSize - 1, board.ySize - 1);
 
     return bs::BoardShip(coord, shipDir, type);
 }
@@ -232,12 +206,15 @@ void bs::ConsolePlayerController::ReceiveEnemyShotResult(const bs::Coordinate& c
         case ShotResult::HitAndSunk:
             Console::PrintInfo("\tThey sunk a ship\n");
             break;
+        case ShotResult::Victory:
+            Console::PrintInfo("\tThey won a round\n");
+            break;
         default:
             break;
     }
 }
 
-bool bs::ConsolePlayerController::GetTrueOrFalse(const std::string& msg)
+bool bs::ConsolePlayerController::GetYesOrNo(const std::string& msg)
 {
     while (true)
     {

@@ -1,5 +1,5 @@
 #include <tuple>
-#include "coordinate.h"
+#include "include/coordinate.h"
 
 void bs::Coordinate::SetX(int newX)
 {

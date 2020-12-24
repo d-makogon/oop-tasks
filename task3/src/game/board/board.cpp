@@ -1,9 +1,9 @@
-#include "board.h"
+#include "include/board.h"
 
 #include <exception>
 #include <algorithm>
 
-#include "../ships/shipCreator.h"
+#include <shipCreator.h>
 
 bs::Board::Board()
 {

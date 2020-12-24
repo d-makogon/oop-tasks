@@ -3,8 +3,8 @@
 #include <vector>
 #include <map>
 
-#include "../ships/ship.h"
-#include "boardShip.h"
+#include <ship.h>
+#include <boardShip.h>
 
 namespace bs
 {
@@ -25,7 +25,6 @@ namespace bs
         std::map<ShipType, int> shipsCount;
         std::map<Coordinate, ShotHistory> shotHistory;
         int maxShips = 0;
-
 
         // Tries to shoot a ship (if it exists) at given coord
         ShotResult CheckShipsForHit(const Coordinate& coord);

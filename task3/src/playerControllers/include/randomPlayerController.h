@@ -1,7 +1,7 @@
 #pragma once
 
 #include "playerController.h"
-#include "../utility/random.h"
+#include <random.h>
 
 namespace bs
 {
@@ -13,10 +13,7 @@ namespace bs
     public:
         RandomPlayerController() : random() {}
 
-        BoardShip GetShipPlaceInfo(const std::vector<std::pair<bs::ShipType, int>>& availableTypes,
-                                   const std::vector<ShipDirection>& availableDirs,
-                                   int maxXcoord,
-                                   int maxYcoord) override;
+        BoardShip GetShipPlaceInfo(const bs::Board& board) override;
 
         void ReceiveShipPlaceResult(const ShipPlacementResult& result) override {}
 
@@ -26,7 +23,7 @@ namespace bs
 
         void ReceiveAllyShotResult(const ShotResult& shotResult) override {}
 
-        bool GetTrueOrFalse(const std::string& msg) override { return true; }
+        bool GetYesOrNo(const std::string& msg) override { return true; }
 
         void ReceiveEnemyShotResult(const bs::Coordinate& coord, const ShotResult& shotResult) override {}
     };

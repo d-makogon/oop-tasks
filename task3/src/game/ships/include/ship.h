@@ -4,9 +4,9 @@
 #include <map>
 #include <string>
 
-#include "coordinate.h"
-#include "shipTypes.h"
-#include "shotStatus.h"
+#include <coordinate.h>
+#include <shipTypes.h>
+#include <shotStatus.h>
 
 namespace bs
 {

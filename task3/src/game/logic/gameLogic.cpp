@@ -1,6 +1,4 @@
-#include "gameLogic.h"
-
-#include <exception>
+#include "include/gameLogic.h"
 
 bs::GameState bs::GameLogic::GetState() const
 {
@@ -17,7 +15,6 @@ const bs::Board& bs::GameLogic::GetAllyBoard() const
     {
         return *board2;
     }
-    // todo: think how to do it better (return bool?)
     throw std::runtime_error("Wrong game state");
 }
 
@@ -54,7 +51,20 @@ bs::ShotResult bs::GameLogic::Shoot(const bs::Coordinate& coord)
     switch (shotResult)
     {
         case bs::ShotResult::Victory:
-            state = (state == GameState::P1_Shoot) ? GameState::P1_Win : GameState::P2_Win;
+            playedRounds++;
+            if (state == GameState::P1_Shoot)
+                p1Score++;
+            else
+                p2Score++;
+            if (playedRounds >= maxRounds)
+            {
+                state = (p1Score > p2Score) ? GameState::P1_WinGame : GameState::P2_WinGame;
+            }
+            else
+            {
+                state = (state == GameState::P1_Shoot) ? GameState::P1_WinRound : GameState::P2_WinRound;
+                ResetBoards();
+            }
             break;
         case bs::ShotResult::Miss:
             state = (state == GameState::P1_Shoot) ? GameState::P2_Shoot : GameState::P1_Shoot;
@@ -82,4 +92,41 @@ bs::ShipPlacementResult bs::GameLogic::PlaceShip(const bs::BoardShip& shipInfo)
         throw std::runtime_error("Wrong game state");
     }
     return result;
+}
+
+int bs::GameLogic::GetP1Score() const
+{
+    return p1Score;
+}
+
+int bs::GameLogic::GetP2Score() const
+{
+    return p2Score;
+}
+
+int bs::GameLogic::GetPlayedGamesCount() const
+{
+    return playedRounds;
+}
+
+int bs::GameLogic::GetGamesCount() const
+{
+    return maxRounds;
+}
+
+void bs::GameLogic::StartRound()
+{
+    ResetBoards();
+    if (playedRounds < maxRounds)
+        state = GameState::P1_PlaceShip;
+    else if (playedRounds == maxRounds)
+        state = GameState::P1_WinGame;
+}
+
+void bs::GameLogic::ResetBoards()
+{
+    board1.reset();
+    board2.reset();
+    board1 = std::make_unique<Board>();
+    board2 = std::make_unique<Board>();
 }
