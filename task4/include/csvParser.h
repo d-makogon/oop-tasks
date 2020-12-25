@@ -194,8 +194,7 @@ public:
     typedef std::tuple<Args...>& reference;
 
     explicit CSVIterator(std::istream& s, char lineDelimiter = '\n', char valueDelimiter = ',',
-                         char escapeChar = '\"',
-                         size_t alreadyReadLines = 0) :
+                         char escapeChar = '\"') :
             is(s),
             canRead(s.good()),
             reader(lineDelimiter, valueDelimiter, escapeChar) { ++(*this); }
