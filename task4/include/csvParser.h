@@ -47,7 +47,7 @@ public:
 
     void ReadIntoTuple(std::istream& i, std::tuple<Args...>& tuple)
     {
-        ReadLine(i, tuple, std::make_index_sequence<sizeof...(Args)>());
+        ReadLine(i, tuple, std::index_sequence_for<Args...>());
     }
 
     static bool CanRead(std::istream& i)
@@ -56,13 +56,13 @@ public:
     }
 
 private:
-    std::string row;
+    std::string line;
     const char lineDelim;
     const char valueDelim;
     const char escapeChar;
     size_t linesRead = 0;
     size_t curValuePos = 0;
-    std::vector<std::string> rowFields;
+    std::vector<std::string> lineFields;
     std::vector<size_t> delimitersPos;
     size_t curFieldIndex = 0;
 
@@ -76,19 +76,19 @@ private:
     void SplitIntoStrings()
     {
         CSVState state = CSVState::UnescapedField;
-        rowFields.clear();
-        rowFields.push_back("");
+        lineFields.clear();
+        lineFields.push_back("");
         delimitersPos.clear();
         size_t i = 0; // index of the current field
         size_t curPos = 0;
-        for (char c : row)
+        for (char c : line)
         {
             switch (state)
             {
                 case CSVState::UnescapedField:
                     if (c == valueDelim)
                     {
-                        rowFields.push_back("");
+                        lineFields.push_back("");
                         delimitersPos.push_back(curPos);
                         i++;
                     }
@@ -98,7 +98,7 @@ private:
                     }
                     else
                     {
-                        rowFields[i].push_back(c);
+                        lineFields[i].push_back(c);
                     }
                     break;
                 case CSVState::EscapedField:
@@ -108,20 +108,20 @@ private:
                     }
                     else
                     {
-                        rowFields[i].push_back(c);
+                        lineFields[i].push_back(c);
                     }
                     break;
                 case CSVState::EscapedEscape:
                     if (c == valueDelim)
                     {
-                        rowFields.push_back("");
+                        lineFields.push_back("");
                         delimitersPos.push_back(curPos);
                         i++;
                         state = CSVState::UnescapedField;
                     }
                     else if (c == escapeChar)
                     {
-                        rowFields[i].push_back(escapeChar);
+                        lineFields[i].push_back(escapeChar);
                         state = CSVState::EscapedField;
                     }
                     else
@@ -137,14 +137,14 @@ private:
     template<size_t ... I>
     void ReadLine(std::istream& i, std::tuple<Args...>& tuple, std::index_sequence<I...>)
     {
-        std::getline(i, row, lineDelim);
+        std::getline(i, line, lineDelim);
         linesRead++;
         curValuePos = 0;
         curFieldIndex = 0;
 
-        if (row.empty())
+        if (line.empty())
         {
-            throw CSVParsingException("Line was empty", row, curValuePos + 1, linesRead);
+            throw CSVParsingException("Line was empty", line, curValuePos + 1, linesRead);
         }
 
         SplitIntoStrings();
@@ -152,24 +152,24 @@ private:
         // C++17 fold expression
         (..., (ReadValue(std::get<I>(tuple))));
 
-        if (curFieldIndex != rowFields.size())
+        if (curFieldIndex != lineFields.size())
         {
             std::stringstream ss;
-            ss << "Unexpected value: " << rowFields[curFieldIndex];
-            throw CSVParsingException(ss.str(), row, curValuePos + 1, linesRead);
+            ss << "Unexpected value: " << lineFields[curFieldIndex];
+            throw CSVParsingException(ss.str(), line, curValuePos + 1, linesRead);
         }
     }
 
     template<typename T>
     void ReadValue(T& t)
     {
-        std::string curField = rowFields[curFieldIndex];
+        std::string curField = lineFields[curFieldIndex];
         std::stringstream convert(curField);
         if ((convert >> t).fail() || !(convert >> std::ws).eof())
         {
             std::stringstream ss;
             ss << "Couldn't parse value (expected type: " << GetTypeName<T>() << "): " << curField;
-            throw CSVParsingException(ss.str(), row, curValuePos + 1, linesRead);
+            throw CSVParsingException(ss.str(), line, curValuePos + 1, linesRead);
         }
         curValuePos = delimitersPos[curFieldIndex] + 1;
         curFieldIndex++;
@@ -177,7 +177,7 @@ private:
 
     void ReadValue(std::string& t)
     {
-        t = rowFields[curFieldIndex];
+        t = lineFields[curFieldIndex];
         curValuePos = delimitersPos[curFieldIndex] + 1;
         curFieldIndex++;
     }
