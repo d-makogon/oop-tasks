@@ -269,7 +269,7 @@ public:
 
     CSVIterator<Args...> begin() const
     {
-        CSVIterator<Args...> it(inputStream, lineDelim, valueDelim, escapeChar, 0);
+        CSVIterator<Args...> it(inputStream, lineDelim, valueDelim, escapeChar);
         size_t skipped = 0;
         while (skipped++ < skipLinesCount)
             it++;
