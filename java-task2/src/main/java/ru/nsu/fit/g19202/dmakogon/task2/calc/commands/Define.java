@@ -1,6 +1,7 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.DefineAlreadyExistsException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidParametersException;
 
 public class Define extends Command
@@ -11,7 +12,7 @@ public class Define extends Command
     }
 
     @Override
-    protected void executeImplementation(ICommandContext context, Object[] params) throws InvalidParametersException
+    protected void executeImplementation(CommandContext context, Object[] params) throws InvalidParametersException
     {
         String name = null;
         String valueStr;
@@ -31,7 +32,7 @@ public class Define extends Command
 
             if (context.hasNamedParameter(name))
             {
-                throw new InvalidParametersException(createExceptionMessage("Name '" + name + "' is already declared."));
+                throw new DefineAlreadyExistsException(createExceptionMessage("Name '" + name + "' is already declared."));
             }
             context.addNamedParameter(name, value);
         }

@@ -1,6 +1,6 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.DivisionByZeroException;
 
 public class Divide extends Command
@@ -11,14 +11,14 @@ public class Divide extends Command
     }
 
     @Override
-    protected void executeImplementation(ICommandContext context, Object[] params) throws DivisionByZeroException
+    protected void executeImplementation(CommandContext context, Object[] params) throws DivisionByZeroException
     {
         double op1 = context.pop();
         double op2 = context.pop();
 
         if (op1 == 0)
         {
-            throw new DivisionByZeroException(getClass().getSimpleName() + ": Division by zero");
+            throw new DivisionByZeroException(createExceptionMessage("Division by zero"));
         }
 
         context.push(op2 / op1);

@@ -3,7 +3,7 @@ package ru.nsu.fit.g19202.dmakogon.task2.calc;
 import java.io.Closeable;
 import java.io.Writer;
 
-public interface ICommandContext extends Closeable
+public interface CommandContext extends Closeable
 {
     void push(double value);
 

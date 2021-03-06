@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class CommandExecutionContext implements ICommandContext
+public class CommandExecutionContext implements CommandContext
 {
     private final Stack<Double> stack;
     private final Map<String, Double> namedParameters;
@@ -13,17 +13,13 @@ public class CommandExecutionContext implements ICommandContext
 
     public CommandExecutionContext()
     {
-        stack = new Stack<>();
-        namedParameters = new HashMap<>();
-        // writer = new BufferedWriter(new OutputStreamWriter(System.out));
-        writer = new OutputStreamWriter(System.out);
+        this(System.out);
     }
 
     public CommandExecutionContext(OutputStream outputStream)
     {
         stack = new Stack<>();
         namedParameters = new HashMap<>();
-        // writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         writer = new OutputStreamWriter(outputStream);
     }
 

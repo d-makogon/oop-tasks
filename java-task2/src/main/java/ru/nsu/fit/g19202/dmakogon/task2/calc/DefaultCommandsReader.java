@@ -1,5 +1,7 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.commands.Command;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidCommandException;
 
@@ -8,18 +10,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 public class DefaultCommandsReader implements CommandsReader
 {
+    private static final Logger logger = LogManager.getLogger();
+
     private final LineNumberReader reader;
     private final CommandsFactory commandsFactory;
 
-    private final Logger logger;
-
     public DefaultCommandsReader(InputStream inputStream)
     {
-        logger = Logger.getLogger(getClass().getName());
+        logger.trace("Constructing new DefaultCommandsReader...");
 
         reader = new LineNumberReader(new InputStreamReader(inputStream));
         commandsFactory = new CommandsFactory();
@@ -28,6 +29,8 @@ public class DefaultCommandsReader implements CommandsReader
     @Override
     public CommandInfo nextCommand() throws IOException, InvalidCommandException
     {
+        logger.trace("Trying to read next command...");
+
         String line = reader.readLine();
 
         if (line == null || 0 == line.length()) return null;
@@ -42,7 +45,7 @@ public class DefaultCommandsReader implements CommandsReader
         }
         catch (InvalidCommandException e)
         {
-            throw new InvalidCommandException("Error at line " + reader.getLineNumber() + ": " + e.toString());
+            throw new InvalidCommandException("Error at line " + reader.getLineNumber() + ": " + e.getMessage());
         }
 
         // remove first value (command name)
@@ -54,7 +57,7 @@ public class DefaultCommandsReader implements CommandsReader
     @Override
     public void close() throws IOException
     {
-        logger.info("Closing Reader.");
+        logger.trace("Closing DefaultCommandsReader.");
         reader.close();
     }
 }

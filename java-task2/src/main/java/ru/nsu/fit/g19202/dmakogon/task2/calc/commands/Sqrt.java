@@ -1,6 +1,6 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
 
 public class Sqrt extends Command
 {
@@ -10,7 +10,7 @@ public class Sqrt extends Command
     }
 
     @Override
-    protected void executeImplementation(ICommandContext context, Object[] params)
+    protected void executeImplementation(CommandContext context, Object[] params)
     {
         context.push(Math.sqrt(context.pop()));
     }

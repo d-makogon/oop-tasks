@@ -12,12 +12,14 @@ public class StackCalculatorException extends Exception
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + ": " + msg;
+        String s = getClass().getSimpleName();
+        String message = getMessage();
+        return (message != null) ? (s + ": " + message) : s;
     }
 
     @Override
     public String getMessage()
     {
-        return toString();
+        return msg;
     }
 }

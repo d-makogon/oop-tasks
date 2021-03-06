@@ -1,23 +1,22 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.StackCalculatorException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.logging.Logger;
 
 public class StackCalculator
 {
-    private final Logger logger;
-    private final ICommandContext context;
+    private final Logger logger = LogManager.getLogger();
+    private final CommandContext context;
     private final CommandsReader commandsReader;
 
     public StackCalculator(InputStream inputStream, OutputStream outputStream)
     {
-        logger = Logger.getLogger(StackCalculator.class.getName());
-        logger.info("Constructing new StackCalculator.");
+        logger.trace("Constructing new StackCalculator...");
 
         context = new CommandExecutionContext(outputStream);
         commandsReader = new DefaultCommandsReader(inputStream);
@@ -25,7 +24,7 @@ public class StackCalculator
 
     public void execute() throws IOException
     {
-        logger.info("Starting execution.");
+        logger.trace("Starting execution.");
 
         CommandInfo cmdInfo;
 
@@ -39,7 +38,8 @@ public class StackCalculator
             }
             catch (StackCalculatorException e)
             {
-                logger.warning(e.getMessage());
+                System.err.println(e.getMessage());
+                logger.error(e.toString());
             }
         }
         commandsReader.close();

@@ -1,26 +1,28 @@
 package ru.nsu.fit.g19202.dmakogon.task2;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.StackCalculator;
 
 import java.io.*;
-import java.util.logging.Logger;
 
 public class Main
 {
-    private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private static final Logger logger = LogManager.getLogger();
 
     public static void main(String[] args)
     {
+        logger.trace("Starting application...");
         // String s = "DEFINE a 3.1415\nPUSH b\nPUSH 5\nPUSH a\n*\nPRINT";
         // InputStream fis = new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8));
 
         if (args.length > 2)
         {
-            logger.warning("Too many arguments given. Exiting.");
-            // System.err.println("Too many arguments. Excepted 0 or 1.");
+            String msg = "Too much arguments given. Exiting...";
+            System.err.println(msg);
+            logger.fatal(msg);
             return;
         }
-
         try
         {
             StackCalculator calc = new StackCalculator(getInputStream(args), getOutputStream(args));
@@ -28,8 +30,8 @@ public class Main
         }
         catch (IOException e)
         {
-            logger.warning(e.getMessage());
-            // System.err.println(e.getLocalizedMessage());
+            System.err.println("Error reading from/writing to file " + e.getMessage());
+            logger.fatal(e.toString());
         }
     }
 
@@ -40,7 +42,7 @@ public class Main
             logger.info("Using System.in as input stream.");
             return System.in;
         }
-        logger.info("Using " + args[0] + " as input stream.");
+        logger.info("Using " + args[0] + " file as input stream.");
         return new FileInputStream(args[0]);
     }
 
@@ -51,7 +53,7 @@ public class Main
             logger.info("Using System.out as output stream.");
             return System.out;
         }
-        logger.info("Using " + args[0] + " as output stream.");
+        logger.info("Using " + args[1] + " file as output stream.");
         return new FileOutputStream(args[1]);
     }
 }

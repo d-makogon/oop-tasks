@@ -1,6 +1,6 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.WriteException;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ public class Print extends Command
     }
 
     @Override
-    protected void executeImplementation(ICommandContext context, Object[] params) throws WriteException
+    protected void executeImplementation(CommandContext context, Object[] params) throws WriteException
     {
         // context.getPrintStream().println(context.peek());
         try

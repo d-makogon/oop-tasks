@@ -1,27 +1,27 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.commands.Command;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidCommandException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
-import java.util.logging.Logger;
 
 public class CommandsFactory
 {
+    private final static Logger logger = LogManager.getLogger();
+
     private static final String COMMANDS_PROP = "/commands.properties";
     private final HashMap<String, String> commandsClassesNames;
-    private final Logger logger;
 
     public CommandsFactory()
     {
-        logger = Logger.getLogger(CommandsFactory.class.getName());
-        logger.info("Constructing new CommandsFactory.");
+        logger.trace("Constructing new CommandsFactory...");
 
         commandsClassesNames = new HashMap<>();
 
@@ -30,20 +30,19 @@ public class CommandsFactory
         if (propIn == null)
         {
             String msg = "Unable to find '" + COMMANDS_PROP + "' bundle.";
-            logger.warning(msg);
+            logger.fatal(msg);
             throw new MissingResourceException(msg, COMMANDS_PROP, "");
         }
 
         PropertyResourceBundle bundle;
-
         try
         {
-            bundle = new PropertyResourceBundle(new BufferedReader(new InputStreamReader(propIn)));
+            bundle = new PropertyResourceBundle(new InputStreamReader(propIn));
         }
         catch (IOException e)
         {
             String msg = "Unable to open '" + COMMANDS_PROP + "' bundle.";
-            logger.warning(msg);
+            logger.fatal(msg);
             throw new MissingResourceException(msg, COMMANDS_PROP, "");
         }
 
@@ -66,19 +65,19 @@ public class CommandsFactory
         }
         catch (IOException e)
         {
-            logger.warning("Error closing resource bundle input stream.");
+            logger.fatal("Error closing resource bundle input stream.");
         }
     }
 
     public Command create(String commandName) throws InvalidCommandException
     {
-        logger.info("Trying to create Command with name '" + commandName + "'.");
+        logger.trace("Trying to create Command with name '" + commandName + "'.");
         Command instance;
 
         String className = commandsClassesNames.get(commandName.toLowerCase());
         if (className == null)
         {
-            logger.warning("Unable to find class name for command name '" + commandName + "'.");
+            logger.error("Unable to find class name for command name '" + commandName + "'.");
             throw new InvalidCommandException("Unknown command: " + commandName);
         }
         try
@@ -87,12 +86,12 @@ public class CommandsFactory
         }
         catch (ClassNotFoundException e)
         {
-            logger.warning("Unable to find class for name '" + className + "'.");
+            logger.error("Unable to find class for name '" + className + "'.");
             throw new InvalidCommandException("Unknown command: " + commandName);
         }
         catch (Exception e)
         {
-            logger.warning("Unable to create new instance of Command with name '" + commandName + "'.\n" + e.getMessage());
+            logger.error("Unable to create new instance of Command with name '" + commandName + "'.\n" + e.getMessage());
             throw new RuntimeException("Error creating Command: " + e.toString());
         }
 

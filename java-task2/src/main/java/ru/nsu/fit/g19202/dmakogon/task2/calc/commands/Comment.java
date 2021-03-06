@@ -1,16 +1,21 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
 
 public class Comment extends Command
 {
-    protected Comment()
+    public Comment()
     {
         super(0, 0);
     }
 
     @Override
-    protected void executeImplementation(ICommandContext context, Object[] params)
+    public void execute(CommandContext context, Object[] params)
+    {
+    }
+
+    @Override
+    protected void executeImplementation(CommandContext context, Object[] params)
     {
     }
 }

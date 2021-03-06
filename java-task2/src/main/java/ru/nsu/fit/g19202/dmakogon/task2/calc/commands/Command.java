@@ -1,6 +1,6 @@
 package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
 
-import ru.nsu.fit.g19202.dmakogon.task2.calc.ICommandContext;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.EmptyStackException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidParametersException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.StackCalculatorException;
@@ -21,9 +21,9 @@ public abstract class Command
         return getClass().getSimpleName() + ": " + msg;
     }
 
-    protected abstract void executeImplementation(ICommandContext context, Object[] params) throws StackCalculatorException;
+    protected abstract void executeImplementation(CommandContext context, Object[] params) throws StackCalculatorException;
 
-    public void execute(ICommandContext context, Object[] params) throws StackCalculatorException
+    public void execute(CommandContext context, Object[] params) throws StackCalculatorException
     {
         if (params.length > paramsCount)
         {
