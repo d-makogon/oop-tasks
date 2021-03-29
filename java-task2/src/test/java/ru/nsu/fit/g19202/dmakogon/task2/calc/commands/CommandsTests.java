@@ -1,8 +1,11 @@
+package ru.nsu.fit.g19202.dmakogon.task2.calc.commands;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandExecutionContext;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandContext;
-import ru.nsu.fit.g19202.dmakogon.task2.calc.commands.*;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.CommandExecutionContext;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.DefineAlreadyExistsException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.EmptyStackException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidParametersException;
@@ -11,7 +14,6 @@ import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.StackCalculatorException
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.logging.LogManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,11 +25,11 @@ public class CommandsTests
     @BeforeEach
     void turnOffLogging()
     {
-        LogManager.getLogManager().reset();
+        Configurator.setRootLevel(Level.OFF);
     }
 
     @Test
-    void add_AddsTwoNumbers() throws StackCalculatorException
+    void addAddsTwoNumbers() throws StackCalculatorException
     {
         // row format: op1, op2, expectedResult
         double[][] testValues = {
@@ -46,7 +48,7 @@ public class CommandsTests
     }
 
     @Test
-    void add_AddsMultipleNumbers() throws StackCalculatorException
+    void addAddsMultipleNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 {1, 2, 3, 4, 5, 0, 15},
@@ -73,13 +75,13 @@ public class CommandsTests
     }
 
     @Test
-    void add_FailsWhenStackIsEmpty()
+    void addFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Add()));
     }
 
     @Test
-    void subtract_SubtractsTwoNumbers() throws StackCalculatorException
+    void subtractSubtractsTwoNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 {1, 2, 1 - 2},
@@ -98,7 +100,7 @@ public class CommandsTests
     }
 
     @Test
-    void subtract_SubtractsMultipleNumbers() throws StackCalculatorException
+    void subtractSubtractsMultipleNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 // (1 - (2 - (3 - (4 - (5 - 0))))) = 3
@@ -115,13 +117,13 @@ public class CommandsTests
     }
 
     @Test
-    void subtract_FailsWhenStackIsEmpty()
+    void subtractFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Subtract()));
     }
 
     @Test
-    void multiply_MultipliesTwoNumbers() throws StackCalculatorException
+    void multiplyMultipliesTwoNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 {1, 3, 3},
@@ -140,7 +142,7 @@ public class CommandsTests
     }
 
     @Test
-    void multiply_MultipliesMultipleNumbers() throws StackCalculatorException
+    void multiplyMultipliesMultipleNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 // (1 - (2 - (3 - (4 - (5 - 0))))) = 3
@@ -169,13 +171,13 @@ public class CommandsTests
     }
 
     @Test
-    void multiply_FailsWhenStackIsEmpty()
+    void multiplyFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Multiply()));
     }
 
     @Test
-    void divide_DividesTwoNumbers() throws StackCalculatorException
+    void divideDividesTwoNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 {1, 2, 0.5},
@@ -194,7 +196,7 @@ public class CommandsTests
     }
 
     @Test
-    void divide_DividesMultipleNumbers() throws StackCalculatorException
+    void divideDividesMultipleNumbers() throws StackCalculatorException
     {
         double[][] testValues = {
                 {1, 2, 3, 4, 5, 6, (1 / (2 / (3 / (4 / (5 / (double) 6)))))},
@@ -209,7 +211,7 @@ public class CommandsTests
     }
 
     @Test
-    void divide_FailsWhenDividingByZero()
+    void divideFailsWhenDividingByZero()
     {
         double[][] testValues = {
                 {Double.NEGATIVE_INFINITY, 1.1, Double.NEGATIVE_INFINITY, 0},
@@ -224,13 +226,13 @@ public class CommandsTests
     }
 
     @Test
-    void divide_FailsWhenStackIsEmpty()
+    void divideFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Divide()));
     }
 
     @Test
-    void sqrt_CalculatesSquareRootCorrectly() throws StackCalculatorException
+    void sqrtCalculatesSquareRootCorrectly() throws StackCalculatorException
     {
         double[][] testValues = {
                 {0, 0},
@@ -249,13 +251,13 @@ public class CommandsTests
     }
 
     @Test
-    void sqrt_FailsWhenStackIsEmpty()
+    void sqrtFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Sqrt()));
     }
 
     @Test
-    void define_DefinesValues() throws StackCalculatorException
+    void defineDefinesValues() throws StackCalculatorException
     {
         Object[][] defines = {
                 {"A", "10.5123"}, {"x", "0"}, {"y", "-1"}
@@ -274,7 +276,7 @@ public class CommandsTests
     }
 
     @Test
-    void define_FailsWhenIncorrectValuesAreGiven()
+    void defineFailsWhenIncorrectValuesAreGiven()
     {
         Object[][] incorrectDefines = {
                 {"A", "f112"}, {"x", ""}, {"a", " abc "},
@@ -288,7 +290,7 @@ public class CommandsTests
     }
 
     @Test
-    void define_FailsWhenRedefining() throws StackCalculatorException
+    void defineFailsWhenRedefining() throws StackCalculatorException
     {
         Define define = new Define();
         CommandContext context = new CommandExecutionContext();
@@ -297,7 +299,7 @@ public class CommandsTests
     }
 
     @Test
-    void pop_PopsValues() throws StackCalculatorException
+    void popPopsValues() throws StackCalculatorException
     {
         CommandContext context = new CommandExecutionContext();
         context.push(1);
@@ -312,13 +314,13 @@ public class CommandsTests
     }
 
     @Test
-    void pop_FailsWhenStackIsEmpty()
+    void popFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> executeCommandWithEmptyStack(new Pop()));
     }
 
     @Test
-    void push_PushesValues() throws StackCalculatorException
+    void pushPushesValues() throws StackCalculatorException
     {
         Object[] values = {"1", "21412.121", "-0", "-1.12"};
         Push push = new Push();
@@ -331,7 +333,7 @@ public class CommandsTests
     }
 
     @Test
-    void push_PushesDefinedValues() throws StackCalculatorException
+    void pushPushesDefinedValues() throws StackCalculatorException
     {
         Object[][] defines = {
                 {"X", "10"}, {"a", "12.3121"}
@@ -350,19 +352,19 @@ public class CommandsTests
     }
 
     @Test
-    void push_FailsWhenIncorrectValuesAreGiven()
+    void pushFailsWhenIncorrectValuesAreGiven()
     {
         Object[] values = {"12.sada", "f", "X", ""};
         Push push = new Push();
         CommandContext context = new CommandExecutionContext();
-        for (var value : values)
+        for (var ignored : values)
         {
             assertThrows(InvalidParametersException.class, () -> push.execute(context, new Object[]{values}));
         }
     }
 
     @Test
-    void print_PrintsValue() throws StackCalculatorException
+    void printPrintsValue() throws StackCalculatorException
     {
         double value = 10.123123d;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -373,13 +375,13 @@ public class CommandsTests
     }
 
     @Test
-    void print_FailsWhenStackIsEmpty()
+    void printFailsWhenStackIsEmpty()
     {
         assertThrows(EmptyStackException.class, () -> new Print().execute(new CommandExecutionContext(), new Object[]{}));
     }
 
     @Test
-    void comment_DoesntDoAnything()
+    void commentDoesntDoAnything()
     {
         double valueInStack = 112.1d;
         Object[] comments = {
