@@ -16,7 +16,6 @@ public class Print extends Command
     @Override
     protected void executeImplementation(CommandContext context, Object[] params) throws WriteException
     {
-        // context.getPrintStream().println(context.peek());
         try
         {
             Writer writer = context.getWriter();

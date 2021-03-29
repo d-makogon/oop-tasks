@@ -14,10 +14,8 @@ public class Main
     public static void main(String[] args)
     {
         logger.trace("Starting application...");
-        // String s = "DEFINE a 3.1415\nPUSH b\nPUSH 5\nPUSH a\n*\nPRINT";
-        // InputStream fis = new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8));
 
-        if (args.length > 2)
+            if (args.length > 2)
         {
             String msg = "Too much arguments given. Exiting...";
             System.err.println(msg);
