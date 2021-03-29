@@ -14,10 +14,9 @@ public class StackCalculator
     private final CommandContext context;
     private final CommandsReader commandsReader;
 
-    public StackCalculator(InputStream inputStream, OutputStream outputStream)
+    public StackCalculator(InputStream inputStream, OutputStream outputStream) throws StackCalculatorException, IOException
     {
         logger.trace("Constructing new StackCalculator...");
-
         context = new CommandExecutionContext(outputStream);
         commandsReader = new DefaultCommandsReader(inputStream);
     }
@@ -34,6 +33,7 @@ public class StackCalculator
             {
                 cmdInfo = commandsReader.nextCommand();
                 if (cmdInfo == null) break;
+                logger.info("Executing " + cmdInfo.getCommand().getClass().getSimpleName());
                 cmdInfo.getCommand().execute(context, cmdInfo.getParams());
             }
             catch (StackCalculatorException e)

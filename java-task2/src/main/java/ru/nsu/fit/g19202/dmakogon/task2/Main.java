@@ -3,6 +3,7 @@ package ru.nsu.fit.g19202.dmakogon.task2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.StackCalculator;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.StackCalculatorException;
 
 import java.io.*;
 
@@ -27,6 +28,11 @@ public class Main
         {
             StackCalculator calc = new StackCalculator(getInputStream(args), getOutputStream(args));
             calc.execute();
+        }
+        catch (StackCalculatorException e)
+        {
+            System.err.println("Error: " + e.getMessage());
+            logger.fatal(e.toString());
         }
         catch (IOException e)
         {

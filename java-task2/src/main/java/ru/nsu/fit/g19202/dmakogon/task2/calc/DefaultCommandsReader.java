@@ -3,7 +3,9 @@ package ru.nsu.fit.g19202.dmakogon.task2.calc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.commands.Command;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.CommandNotFoundException;
 import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.InvalidCommandException;
+import ru.nsu.fit.g19202.dmakogon.task2.calc.exceptions.StackCalculatorException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +20,7 @@ public class DefaultCommandsReader implements CommandsReader
     private final LineNumberReader reader;
     private final CommandsFactory commandsFactory;
 
-    public DefaultCommandsReader(InputStream inputStream)
+    public DefaultCommandsReader(InputStream inputStream) throws StackCalculatorException, IOException
     {
         logger.trace("Constructing new DefaultCommandsReader...");
 
@@ -27,7 +29,7 @@ public class DefaultCommandsReader implements CommandsReader
     }
 
     @Override
-    public CommandInfo nextCommand() throws IOException, InvalidCommandException
+    public CommandInfo nextCommand() throws IOException, InvalidCommandException, CommandNotFoundException
     {
         logger.trace("Trying to read next command...");
 
@@ -46,6 +48,10 @@ public class DefaultCommandsReader implements CommandsReader
         catch (InvalidCommandException e)
         {
             throw new InvalidCommandException("Error at line " + reader.getLineNumber() + ": " + e.getMessage());
+        }
+        catch (CommandNotFoundException e)
+        {
+            throw new CommandNotFoundException("Error at line " + reader.getLineNumber() + ": " + e.getMessage());
         }
 
         // remove first value (command name)

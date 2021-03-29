@@ -18,6 +18,8 @@
     <Loggers>
         <Root level="all">
             <AppenderRef ref="Async"/>
+            <!-- Uncomment to print logs to console -->
+            <!-- <AppenderRef ref="Console"/>-->
         </Root>
     </Loggers>
 </Configuration>
