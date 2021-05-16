@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TopPanelView extends JComponent
 {
@@ -22,7 +23,8 @@ public class TopPanelView extends JComponent
     private int ownSizeY;
     private int faceX;
     private int faceY;
-    private int seconds;
+
+    private final AtomicInteger seconds;
     private int remainingMines;
 
     public TopPanelView(GameController gameController) throws ResourceLoadingException
@@ -46,7 +48,7 @@ public class TopPanelView extends JComponent
         ownSizeX = 6 * digitSizeX + currentFaceImage.getWidth(null) + 20;
         ownSizeY = digitSizeY + 10;
 
-        this.seconds = 0;
+        this.seconds = new AtomicInteger(0);
 
         faceX = (ownSizeX - currentFaceImage.getWidth(null)) / 2;
         faceY = (ownSizeY - currentFaceImage.getHeight(null)) / 2;
@@ -102,7 +104,7 @@ public class TopPanelView extends JComponent
         final int minesStartX = (ownSizeX - 5) - digitSizeX * 3;
 
         // draw time
-        drawDigits(g, timerStartX, centerY, seconds);
+        drawDigits(g, timerStartX, centerY, seconds.get());
 
         // draw central button
         faceX = (ownSizeX - currentFaceImage.getWidth(null)) / 2;
@@ -141,7 +143,7 @@ public class TopPanelView extends JComponent
 
     public void onTimeUpdate(int seconds)
     {
-        this.seconds = seconds;
+        this.seconds.set(seconds);
         repaint();
     }
 
