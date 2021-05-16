@@ -28,12 +28,14 @@ public class StatsManager
 
     private void readStatistics() throws IOException
     {
-        FileInputStream fis = new FileInputStream(RECORDS_FILE);
-        InputStreamReader reader = new InputStreamReader(fis);
-        statistics = gson.fromJson(reader, Statistics.class);
-        if (statistics == null)
+        try (FileInputStream fis = new FileInputStream(RECORDS_FILE))
         {
-            statistics = new Statistics();
+            InputStreamReader reader = new InputStreamReader(fis);
+            statistics = gson.fromJson(reader, Statistics.class);
+            if (statistics == null)
+            {
+                statistics = new Statistics();
+            }
         }
     }
 
@@ -44,9 +46,10 @@ public class StatsManager
 
     public void writeStatistics() throws IOException
     {
-        FileWriter writer = new FileWriter(RECORDS_FILE);
-        gson.toJson(statistics, Statistics.class, writer);
-        writer.close();
+        try (FileWriter writer = new FileWriter(RECORDS_FILE))
+        {
+            gson.toJson(statistics, Statistics.class, writer);
+        }
     }
 
     public void addRecord(String name, int seconds)

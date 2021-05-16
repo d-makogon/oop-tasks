@@ -1,10 +1,13 @@
 package ru.nsu.fit.g19202.dmakogon.task3.game;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
 
 public class GameSettings
 {
+    private static final String SETTINGS_FILE = "/settings/settings.properties";
+
     private static List<GameSettings> settingsList;
     private final int fieldSizeX;
     private final int fieldSizeY;
@@ -19,16 +22,24 @@ public class GameSettings
         this.bombsCount = bombsCount;
     }
 
-    public static List<GameSettings> readSettings() throws InvalidSettingsException
+    public static List<GameSettings> readSettings() throws InvalidSettingsException, IOException
     {
         if (settingsList != null)
         {
             return settingsList;
         }
+
         settingsList = new ArrayList<>();
-        try
+
+        try (InputStream inputStream = GameSettings.class.getResourceAsStream(SETTINGS_FILE))
         {
-            PropertyResourceBundle bundle = new PropertyResourceBundle(Objects.requireNonNull(GameSettings.class.getResourceAsStream("/settings/settings.properties")));
+            if (inputStream == null)
+            {
+                throw new FileNotFoundException(SETTINGS_FILE + "not found.");
+            }
+
+            PropertyResourceBundle bundle = new PropertyResourceBundle(inputStream);
+
             var keys = bundle.getKeys().asIterator();
             while (keys.hasNext())
             {
@@ -46,11 +57,9 @@ public class GameSettings
                 settingsList.add(new GameSettings(key, sizeX, sizeY, minesCount));
             }
         }
-        catch (IOException e)
-        {
-            return settingsList;
-        }
+
         settingsList.sort(Comparator.comparingInt(s -> s.bombsCount));
+
         return settingsList;
     }
 

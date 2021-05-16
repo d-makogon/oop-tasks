@@ -3,15 +3,17 @@ package ru.nsu.fit.g19202.dmakogon.task3.game;
 import ru.nsu.fit.g19202.dmakogon.task3.game.records.Record;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GameController
 {
     private final Game game;
 
-    public GameController(Game game)
+    private final List<GameSettings> settings;
+
+    public GameController(Game game, List<GameSettings> settings)
     {
         this.game = game;
+        this.settings = settings;
     }
 
     public Game getGame()
@@ -56,14 +58,7 @@ public class GameController
 
     public List<GameSettings> getAvailableSettings()
     {
-        try
-        {
-            return GameSettings.readSettings();
-        }
-        catch (InvalidSettingsException e)
-        {
-            return new ArrayList<>();
-        }
+        return settings;
     }
 
     public void storeResult(String name)
