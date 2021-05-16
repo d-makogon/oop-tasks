@@ -2,11 +2,12 @@ package ru.nsu.fit.g19202.dmakogon.task3.game;
 
 import ru.nsu.fit.g19202.dmakogon.task3.game.records.Record;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class GameController
 {
     private final Game game;
+
     private final List<GameSettings> settings;
 
     public GameController(Game game, List<GameSettings> settings)

@@ -3,11 +3,11 @@ package ru.nsu.fit.g19202.dmakogon.task3.game;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
 
 public class GameSettings
 {
     private static final String SETTINGS_FILE = "/settings/settings.properties";
+
     private static List<GameSettings> settingsList;
     private final int fieldSizeX;
     private final int fieldSizeY;
@@ -39,6 +39,7 @@ public class GameSettings
             }
 
             PropertyResourceBundle bundle = new PropertyResourceBundle(inputStream);
+
             var keys = bundle.getKeys().asIterator();
             while (keys.hasNext())
             {
