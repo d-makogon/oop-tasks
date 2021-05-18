@@ -128,6 +128,8 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
         JSlider slider = new JSlider(MIN_MSECS, MAX_MSECS, value);
         slider.setPaintLabels(true);
         slider.setMajorTickSpacing(SLIDER_STEP);
+        slider.setMinorTickSpacing(10);
+        slider.setSnapToTicks(true);
         return slider;
     }
 
