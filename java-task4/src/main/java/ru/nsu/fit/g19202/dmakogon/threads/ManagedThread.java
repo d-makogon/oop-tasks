@@ -48,7 +48,6 @@ public class ManagedThread extends Thread
         {
             if (isInterrupted())
             {
-                // System.err.println(Thread.currentThread().getName() + " was interrupted by flag");
                 return false;
             }
             if (desiredState == ThreadState.RUNNING)
@@ -65,25 +64,21 @@ public class ManagedThread extends Thread
                     }
                     else if (desiredState == ThreadState.STOP)
                     {
-                        // System.err.println(Thread.currentThread().getName() + " is stopped");
                         return false;
                     }
                     else if (desiredState == ThreadState.SLEEP)
                     {
                         try
                         {
-                            // System.err.println(Thread.currentThread().getName() + " fell asleep");
                             lock.wait();
                         }
                         catch (InterruptedException e)
                         {
-                            // System.err.println(Thread.currentThread().getName() + " is interrupted");
                             return false;
                         }
                     }
                     else if (desiredState == ThreadState.RUNNING)
                     {
-                        // System.err.println(Thread.currentThread().getName() + " is resumed");
                         return true;
                     }
                 }
