@@ -14,11 +14,10 @@ import java.awt.*;
 
 public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView, CarFactoryObserver
 {
-    private final CarFactory carFactory;
     private static final int MIN_MSECS = 100;
     private static final int MAX_MSECS = 3100;
     private static final int SLIDER_STEP = 1000;
-
+    private final CarFactory carFactory;
     private final JFrame frame;
     private final NamedLabel accessoryProduceTimeLabel;
     private final NamedLabel bodyProduceTimeLabel;
@@ -69,6 +68,7 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
         bodyProduceTimeSlider.addChangeListener((x) -> factorySettings.setBodyProduceTime(bodyProduceTimeSlider.getValue()));
         accessoryProduceTimeSlider.addChangeListener((x) -> factorySettings.setAccessoryProduceTime(accessoryProduceTimeSlider.getValue()));
 
+
         Container contentPane = frame.getContentPane();
         contentPane.setLayout(new GridBagLayout());
 
@@ -77,50 +77,58 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        contentPane.add(dealerDelayLabel, gbc);
+        gbc.insets = new Insets(3, 5, 3, 5);
+        addTwoComponents(contentPane, gbc, dealerDelayLabel, dealerDelaySlider);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, dealersCountLabel);
+        addSeparator(contentPane, gbc);
+        addTwoComponents(contentPane, gbc, motorProduceTimeLabel, motorProduceTimeSlider);
+        addSeparator(contentPane, gbc);
+        addTwoComponents(contentPane, gbc, bodyProduceTimeLabel, bodyProduceTimeSlider);
+        addSeparator(contentPane, gbc);
+        addTwoComponents(contentPane, gbc, accessoryProduceTimeLabel, accessoryProduceTimeSlider);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, accessoriesSuppliersCountLabel);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, curBodiesCount);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, curAccessoriesCount);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, curMotorsCount);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, curCarsCount);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, totalCarsCount);
+    }
+
+    private static void addSeparator(Container container, GridBagConstraints gbc)
+    {
+        JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+        separator.setBackground(Color.GRAY);
+        separator.setForeground(Color.GRAY);
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        container.add(separator, gbc);
+        gbc.gridy++;
+    }
+
+    private static void addComponent(Container container, GridBagConstraints gbc, JComponent component)
+    {
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        container.add(component, gbc);
+        gbc.gridy++;
+    }
+
+    private static void addTwoComponents(Container container, GridBagConstraints gbc, JComponent component1,
+                                         JComponent component2)
+    {
+        gbc.gridx = 0;
+        gbc.gridwidth = 1;
+        container.add(component1, gbc);
         gbc.gridx = 1;
-        contentPane.add(dealerDelaySlider, gbc);
-
+        container.add(component2, gbc);
         gbc.gridy++;
-        gbc.gridx = 0;
-        contentPane.add(dealersCountLabel, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        contentPane.add(motorProduceTimeLabel, gbc);
-        gbc.gridx = 1;
-        contentPane.add(motorProduceTimeSlider, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        contentPane.add(bodyProduceTimeLabel, gbc);
-        gbc.gridx = 1;
-        contentPane.add(bodyProduceTimeSlider, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        contentPane.add(accessoryProduceTimeLabel, gbc);
-        gbc.gridx = 1;
-        contentPane.add(accessoryProduceTimeSlider, gbc);
-
-        gbc.gridy++;
-        gbc.gridx = 0;
-        contentPane.add(accessoriesSuppliersCountLabel, gbc);
-
-        gbc.gridy++;
-        contentPane.add(curBodiesCount, gbc);
-
-        gbc.gridy++;
-        contentPane.add(curAccessoriesCount, gbc);
-
-        gbc.gridy++;
-        contentPane.add(curMotorsCount, gbc);
-
-        gbc.gridy++;
-        contentPane.add(curCarsCount, gbc);
-
-        gbc.gridy++;
-        contentPane.add(totalCarsCount, gbc);
     }
 
     private JSlider createTimeSlider(int value)
