@@ -25,6 +25,7 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
     private final NamedLabel dealerDelayLabel;
     private final NamedLabel dealersCountLabel;
     private final NamedLabel accessoriesSuppliersCountLabel;
+    private final NamedLabel workersCountLabel;
 
     private final NamedLabel curBodiesCount;
     private final NamedLabel curAccessoriesCount;
@@ -62,12 +63,13 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
         curMotorsCount = new NamedLabel("Current Motors");
         curCarsCount = new NamedLabel("Current Cars");
         totalCarsCount = new NamedLabel("Total Cars");
+        workersCountLabel = new NamedLabel("Workers Count");
+        workersCountLabel.setText(Integer.toString(factorySettings.getWorkersCount()));
 
         dealerDelaySlider.addChangeListener((x) -> factorySettings.setDealerDelay(dealerDelaySlider.getValue()));
         motorProduceTimeSlider.addChangeListener((x) -> factorySettings.setMotorProduceTime(motorProduceTimeSlider.getValue()));
         bodyProduceTimeSlider.addChangeListener((x) -> factorySettings.setBodyProduceTime(bodyProduceTimeSlider.getValue()));
         accessoryProduceTimeSlider.addChangeListener((x) -> factorySettings.setAccessoryProduceTime(accessoryProduceTimeSlider.getValue()));
-
 
         Container contentPane = frame.getContentPane();
         contentPane.setLayout(new GridBagLayout());
@@ -78,9 +80,12 @@ public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets = new Insets(3, 5, 3, 5);
+
         addTwoComponents(contentPane, gbc, dealerDelayLabel, dealerDelaySlider);
         addSeparator(contentPane, gbc);
         addComponent(contentPane, gbc, dealersCountLabel);
+        addSeparator(contentPane, gbc);
+        addComponent(contentPane, gbc, workersCountLabel);
         addSeparator(contentPane, gbc);
         addTwoComponents(contentPane, gbc, motorProduceTimeLabel, motorProduceTimeSlider);
         addSeparator(contentPane, gbc);

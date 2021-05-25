@@ -12,28 +12,30 @@ public class FactorySettings
 {
     private static transient final Object lock = new Object();
     private static transient final String SETTINGS_FILE = "factorySettings.json";
-    private final AtomicInteger bodiesStorageSize;
-    private final AtomicInteger motorsStorageSize;
-    private final AtomicInteger accessoriesStorageSize;
-    private final AtomicInteger carsStorageSize;
-    private final AtomicInteger accessoriesSuppliersCount;
-    private final AtomicInteger workersCount;
-    private final AtomicInteger dealersCount;
+    private final int bodiesStorageSize;
+    private final int motorsStorageSize;
+    private final int accessoriesStorageSize;
+    private final int carsStorageSize;
+    private final int accessoriesSuppliersCount;
+    private final int workersCount;
+    private final int dealersCount;
     private final AtomicInteger accessoryProduceTime;
     private final AtomicInteger bodyProduceTime;
     private final AtomicInteger motorProduceTime;
     private final AtomicInteger dealerDelay;
     private transient CopyOnWriteArrayList<FactorySettingsObserver> observers = new CopyOnWriteArrayList<>();
 
-    public FactorySettings(int bodiesStorageSize, int motorsStorageSize, int accessoriesStorageSize, int carsStorageSize, int accessoriesSuppliersCount, int workersCount, int dealersCount, int accessoryProduceTime, int bodyProduceTime, int motorProduceTime, int dealerDelay)
+    public FactorySettings(int bodiesStorageSize, int motorsStorageSize, int accessoriesStorageSize,
+                           int carsStorageSize, int accessoriesSuppliersCount, int workersCount, int dealersCount,
+                           int accessoryProduceTime, int bodyProduceTime, int motorProduceTime, int dealerDelay)
     {
-        this.bodiesStorageSize = new AtomicInteger(bodiesStorageSize);
-        this.motorsStorageSize = new AtomicInteger(motorsStorageSize);
-        this.accessoriesStorageSize = new AtomicInteger(accessoriesStorageSize);
-        this.carsStorageSize = new AtomicInteger(carsStorageSize);
-        this.accessoriesSuppliersCount = new AtomicInteger(accessoriesSuppliersCount);
-        this.workersCount = new AtomicInteger(workersCount);
-        this.dealersCount = new AtomicInteger(dealersCount);
+        this.bodiesStorageSize = bodiesStorageSize;
+        this.motorsStorageSize = motorsStorageSize;
+        this.accessoriesStorageSize = accessoriesStorageSize;
+        this.carsStorageSize = carsStorageSize;
+        this.accessoriesSuppliersCount = accessoriesSuppliersCount;
+        this.workersCount = workersCount;
+        this.dealersCount = dealersCount;
         this.accessoryProduceTime = new AtomicInteger(accessoryProduceTime);
         this.bodyProduceTime = new AtomicInteger(bodyProduceTime);
         this.motorProduceTime = new AtomicInteger(motorProduceTime);
@@ -129,37 +131,37 @@ public class FactorySettings
 
     public int getBodiesStorageSize()
     {
-        return bodiesStorageSize.get();
+        return bodiesStorageSize;
     }
 
     public int getMotorsStorageSize()
     {
-        return motorsStorageSize.get();
+        return motorsStorageSize;
     }
 
     public int getAccessoriesStorageSize()
     {
-        return accessoriesStorageSize.get();
+        return accessoriesStorageSize;
     }
 
     public int getCarsStorageSize()
     {
-        return carsStorageSize.get();
+        return carsStorageSize;
     }
 
     public int getAccessoriesSuppliersCount()
     {
-        return accessoriesSuppliersCount.get();
+        return accessoriesSuppliersCount;
     }
 
     public int getWorkersCount()
     {
-        return workersCount.get();
+        return workersCount;
     }
 
     public int getDealersCount()
     {
-        return dealersCount.get();
+        return dealersCount;
     }
 
     public void addObserver(FactorySettingsObserver observer)
