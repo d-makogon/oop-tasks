@@ -5,12 +5,10 @@
 #include <algorithm>
 #include <vector>
 
-using namespace std;
-
 template<class KeyT, class ValueT>
-vector<pair<KeyT, ValueT>> sortMap(map<KeyT, ValueT>& M, bool (* cmp)(pair<KeyT, ValueT>&, pair<KeyT, ValueT>&))
+std::vector<pair<KeyT, ValueT>> sortMap(std::map<KeyT, ValueT>& M, bool (* cmp)(std::pair<KeyT, ValueT>&, std::pair<KeyT, ValueT>&))
 {
-    vector<pair<KeyT, ValueT>> v;
+    std::vector<pair<KeyT, ValueT>> v;
     v.reserve(M.size());
 
     for (auto& it : M)
@@ -18,25 +16,25 @@ vector<pair<KeyT, ValueT>> sortMap(map<KeyT, ValueT>& M, bool (* cmp)(pair<KeyT,
         v.push_back(it);
     }
 
-    sort(v.begin(), v.end(), cmp);
+    std::sort(v.begin(), v.end(), cmp);
 
     return v;
 }
 
 // counts words in istream separated by non-alphanumeric character
-map<string, int> countWords(istream& input, int& wordsCount)
+std::map<string, int> countWords(std::istream& input, int& wordsCount)
 {
-    string str;
-    map<string, int> words;
+    std::string str;
+    std::map<string, int> words;
 
-    while (getline(input, str))
+    while (std::getline(input, str))
     {
-        string word;
-        size_t wordLength = 0;
-        size_t length = str.length();
-        for (size_t i = 0; i < length; i++)
+        std::string word;
+        std::size_t wordLength = 0;
+        std::size_t length = str.length();
+        for (std::size_t i = 0; i < length; i++)
         {
-            bool alnum = isalnum(str[i]);
+            bool alnum = std::isalnum(str[i]);
             if (alnum)
             {
                 word.append(1, str[i]);
@@ -54,7 +52,7 @@ map<string, int> countWords(istream& input, int& wordsCount)
     return words;
 }
 
-void printFrequencies(ostream& stream, vector<pair<string, int>>& words, int totalWords)
+void printFrequencies(std::ostream& stream, std::vector<std::pair<std::string, int>>& words, int totalWords)
 {
     for (auto& it : words)
     {
@@ -69,26 +67,26 @@ int main(int argc, char* argv[])
 
     if (argc != 3)
     {
-        cout << "Wrong amount of arguments" << endl;
+        std::cout << "Wrong amount of arguments" << std::endl;
         return 1;
     }
 
-    ifstream inputFile(argv[1]);
+    std::ifstream inputFile(argv[1]);
     if (!inputFile.is_open())
     {
-        cout << "Error opening file " << argv[1] << endl;
+        std::cout << "Error opening file " << argv[1] << std::endl;
         return 1;
     }
 
-    ofstream outputFile(argv[2]);
+    std::ofstream outputFile(argv[2]);
     if (!outputFile.is_open())
     {
-        cout << "Error opening file " << argv[2] << endl;
+        std::cout << "Error opening file " << argv[2] << std::endl;
         return 1;
     }
 
     int totalWords = 0;
-    map<string, int> words = countWords(inputFile, totalWords);
+    std::map<std::string, int> words = countWords(inputFile, totalWords);
 
     auto sorted = sortMap<string, int>(words,
                                        [](pair<string, int>& a, pair<string, int>& b) { return a.second > b.second; });
