@@ -6,9 +6,9 @@
 #include <vector>
 
 template<class KeyT, class ValueT>
-std::vector<pair<KeyT, ValueT>> sortMap(std::map<KeyT, ValueT>& M, bool (* cmp)(std::pair<KeyT, ValueT>&, std::pair<KeyT, ValueT>&))
+std::vector<std::pair<KeyT, ValueT>> sortMap(std::map<KeyT, ValueT>& M, bool (* cmp)(std::pair<KeyT, ValueT>&, std::pair<KeyT, ValueT>&))
 {
-    std::vector<pair<KeyT, ValueT>> v;
+    std::vector<std::pair<KeyT, ValueT>> v;
     v.reserve(M.size());
 
     for (auto& it : M)
@@ -22,10 +22,10 @@ std::vector<pair<KeyT, ValueT>> sortMap(std::map<KeyT, ValueT>& M, bool (* cmp)(
 }
 
 // counts words in istream separated by non-alphanumeric character
-std::map<string, int> countWords(std::istream& input, int& wordsCount)
+std::map<std::string, int> countWords(std::istream& input, int& wordsCount)
 {
     std::string str;
-    std::map<string, int> words;
+    std::map<std::string, int> words;
 
     while (std::getline(input, str))
     {
@@ -57,14 +57,12 @@ void printFrequencies(std::ostream& stream, std::vector<std::pair<std::string, i
     for (auto& it : words)
     {
         float percent = it.second / (float)totalWords;
-        stream << it.first << ',' << it.second << ',' << percent << endl;
+        stream << it.first << ',' << it.second << ',' << percent << std::endl;
     }
 }
 
 int main(int argc, char* argv[])
 {
-    setlocale(LC_ALL, "ru_RU.cp1251");
-
     if (argc != 3)
     {
         std::cout << "Wrong amount of arguments" << std::endl;
