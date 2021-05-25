@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
     int totalWords = 0;
     std::map<std::string, int> words = countWords(inputFile, totalWords);
 
-    auto sorted = sortMap<string, int>(words,
-                                       [](pair<string, int>& a, pair<string, int>& b) { return a.second > b.second; });
+    auto sorted = sortMap<std::string, int>(words,
+                                       [](std::pair<std::string, int>& a, std::pair<std::string, int>& b) { return a.second > b.second; });
 
     printFrequencies(outputFile, sorted, totalWords);
 
