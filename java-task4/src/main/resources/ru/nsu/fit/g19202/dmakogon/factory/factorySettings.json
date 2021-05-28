@@ -1,0 +1,13 @@
+{
+  "bodiesStorageSize": 100,
+  "motorsStorageSize": 100,
+  "accessoriesStorageSize": 100,
+  "carsStorageSize": 100,
+  "accessoriesSuppliersCount": 5,
+  "workersCount": 10,
+  "dealersCount": 1,
+  "accessoryProduceTime": 1000,
+  "bodyProduceTime": 2000,
+  "motorProduceTime": 3000,
+  "dealerDelay": 3000
+}
