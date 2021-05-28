@@ -14,7 +14,7 @@ import java.awt.*;
 
 public class SwingCarFactoryView implements FactorySettingsObserver, FactoryView, CarFactoryObserver
 {
-    private static final int MIN_MSECS = 100;
+    private static final int MIN_MSECS = 0;
     private static final int MAX_MSECS = 3100;
     private static final int SLIDER_STEP = 1000;
     private final CarFactory carFactory;

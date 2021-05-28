@@ -10,7 +10,7 @@ public class PooledThread extends Thread
 {
     private final List<ThreadPoolTask> taskQueue;
     private final Logger logger = LogManager.getLogger();
-    AtomicBoolean shutdownRequired = new AtomicBoolean(false);
+    private final AtomicBoolean shutdownRequired = new AtomicBoolean(false);
 
     public PooledThread(String name, List<ThreadPoolTask> taskQueue)
     {

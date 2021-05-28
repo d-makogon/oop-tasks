@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Storage<T extends Item>
 {
-    private final Logger logger = LogManager.getLogger();
     private final Object lock = new Object();
+    private final Object observersLock = new Object();
 
     private final int size;
     private final List<T> items;
@@ -26,19 +26,16 @@ public class Storage<T extends Item>
 
     public T getItem() throws InterruptedException
     {
+        T item;
         synchronized (lock)
         {
             while (true)
             {
                 if (!items.isEmpty())
                 {
-                    T item = items.remove(0);
-                    for (StorageObserver<T> observer : observers)
-                    {
-                        observer.itemRemoved(this, item);
-                    }
+                    item = items.remove(0);
                     lock.notifyAll();
-                    return item;
+                    break;
                 }
                 else
                 {
@@ -46,6 +43,16 @@ public class Storage<T extends Item>
                 }
             }
         }
+
+        synchronized (observersLock)
+        {
+            for (StorageObserver<T> observer : observers)
+            {
+                observer.itemRemoved(this, item);
+            }
+        }
+
+        return item;
     }
 
     public void putItem(T item) throws InterruptedException
@@ -62,13 +69,17 @@ public class Storage<T extends Item>
                 else
                 {
                     items.add(item);
-                    for (StorageObserver<T> observer : observers)
-                    {
-                        observer.itemAdded(this, item);
-                    }
                     lock.notifyAll();
-                    return;
+                    break;
                 }
+            }
+        }
+
+        synchronized (observersLock)
+        {
+            for (StorageObserver<T> observer : observers)
+            {
+                observer.itemAdded(this, item);
             }
         }
     }
@@ -91,7 +102,7 @@ public class Storage<T extends Item>
 
     public void addObserver(StorageObserver<T> observer)
     {
-        synchronized (lock)
+        synchronized (observersLock)
         {
             observers.add(observer);
         }
@@ -99,7 +110,7 @@ public class Storage<T extends Item>
 
     public void removeObserver(StorageObserver<T> observer)
     {
-        synchronized (lock)
+        synchronized (observersLock)
         {
             observers.remove(observer);
         }

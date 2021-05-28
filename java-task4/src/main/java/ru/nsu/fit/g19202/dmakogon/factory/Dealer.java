@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.nsu.fit.g19202.dmakogon.factory.items.Car;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Dealer extends Thread
@@ -28,13 +27,15 @@ public class Dealer extends Thread
         {
             try
             {
+                //noinspection BusyWait
                 sleep(itemQueryTime.get());
                 Car car = carStorage.getItem();
                 logger.info(getName() + ": " + car);
             }
             catch (InterruptedException e)
             {
-                e.printStackTrace();
+                logger.info(getName() +  " interrupted");
+                break;
             }
         }
     }

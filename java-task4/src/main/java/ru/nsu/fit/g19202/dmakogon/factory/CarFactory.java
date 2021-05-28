@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 public class CarFactory implements FactorySettingsObserver
 {
     private final Logger logger = LogManager.getLogger();
-    private final Object lock = new Object();
 
     private final FactorySettings factorySettings;
     private final Storage<Accessory> accessoriesStorage;
@@ -26,6 +25,7 @@ public class CarFactory implements FactorySettingsObserver
     private final List<Dealer> dealers;
     private final WorkersThreadPool workersThreadPool;
     private final CarsStorageController carsStorageController;
+    private final ItemsFactory<Accessory> accessoriesFactory;
 
     private final AtomicInteger totalCarsProducedCount = new AtomicInteger(0);
     private final transient CopyOnWriteArrayList<CarFactoryObserver> observers = new CopyOnWriteArrayList<>();
@@ -110,6 +110,7 @@ public class CarFactory implements FactorySettingsObserver
 
         this.workersThreadPool = new WorkersThreadPool(motorsStorage, bodiesStorage, accessoriesStorage, carsStorage);
         this.carsStorageController = new CarsStorageController(workersThreadPool, carsStorage);
+        this.accessoriesFactory = accessoriesFactory;
     }
 
     public int getTotalProducedCarsCount()
@@ -153,7 +154,7 @@ public class CarFactory implements FactorySettingsObserver
         for (int i = 0; i < accessoriesSuppliersCount; i++)
         {
             Supplier<Accessory> supplier = new Supplier<>("Accessory Supplier " + i, accessoriesStorage,
-                    accessoryProduceTime, new AccessoriesFactory());
+                    accessoryProduceTime, accessoriesFactory);
             accessoriesSuppliers.add(supplier);
             supplier.start();
         }
@@ -175,6 +176,34 @@ public class CarFactory implements FactorySettingsObserver
         carsStorageController.start();
 
         factorySettings.addObserver(this);
+    }
+
+    public void shutdown()
+    {
+        logger.info("Shutting down Cars Factory...");
+        workersThreadPool.shutdown();
+        bodySupplier.interrupt();
+        motorSupplier.interrupt();
+        carsStorageController.interrupt();
+        for (Supplier<Accessory> accessoriesSupplier : accessoriesSuppliers)
+        {
+            accessoriesSupplier.interrupt();
+        }
+
+        try
+        {
+            for (Supplier<Accessory> accessoriesSupplier : accessoriesSuppliers)
+            {
+                accessoriesSupplier.join();
+            }
+            bodySupplier.join();
+            motorSupplier.join();
+            carsStorageController.join();
+        }
+        catch (InterruptedException e)
+        {
+            logger.warn("Interrupted while joining another thread!");
+        }
     }
 
     @Override

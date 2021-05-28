@@ -30,6 +30,7 @@ public class Supplier<T extends Item> extends Thread
         {
             try
             {
+                //noinspection BusyWait
                 sleep(itemSupplyTime.get());
                 T item = itemsFactory.getNewItem();
                 storage.putItem(item);

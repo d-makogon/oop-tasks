@@ -11,8 +11,6 @@ import java.io.IOException;
 
 public class Main
 {
-    private final static Logger logger = LogManager.getLogger();
-
     public static void main(String[] args) throws IOException
     {
         FactorySettings settings = FactorySettings.readSettings();
@@ -24,5 +22,7 @@ public class Main
         carFactory.addObserver(view);
         carFactory.start();
         view.run();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(carFactory::shutdown));
     }
 }
