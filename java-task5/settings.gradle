@@ -1,0 +1,2 @@
+rootProject.name = 'java-task5'
+include('server', 'client', 'utilities')
