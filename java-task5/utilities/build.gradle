@@ -1,0 +1,8 @@
+plugins {
+    id 'java.task5.java-library-conventions'
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-xml
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.12.3'
+}
